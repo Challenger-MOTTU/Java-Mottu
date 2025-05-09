@@ -56,4 +56,16 @@ public class PatioService {
         dto.setCapacidade(patio.getCapacidade());
         return dto;
     }
+
+    public PatioDTO atualizar(PatioDTO dto) {
+        Patio existente = patioRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+
+        existente.setNome(dto.getNome());
+        existente.setCidade(dto.getCidade());
+        existente.setCapacidade(dto.getCapacidade());
+
+        return toDTO(patioRepository.save(existente));
+    }
+
 }

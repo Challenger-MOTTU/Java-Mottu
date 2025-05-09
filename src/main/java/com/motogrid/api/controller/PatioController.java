@@ -36,4 +36,11 @@ public class PatioController {
         patioService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PatioDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PatioDTO dto) {
+        dto.setId(id);
+        return ResponseEntity.ok(patioService.atualizar(dto));
+    }
+
 }
