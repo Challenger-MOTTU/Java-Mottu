@@ -62,4 +62,28 @@ public class MotoService {
         dto.setPatioId(moto.getPatio().getId());
         return dto;
     }
+
+    public MotoDTO atualizar(MotoDTO dto) {
+        Moto existente = motoRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada"));
+
+        existente.setModelo(dto.getModelo());
+        existente.setPlaca(dto.getPlaca());
+        existente.setStatus(dto.getStatus());
+
+        Patio patio = patioRepository.findById(dto.getPatioId())
+                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+
+        existente.setPatio(patio);
+
+        return toDTO(motoRepository.save(existente));
+    }
+
+    public void deletar(Long id) {
+        if (!motoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Moto não encontrada");
+        }
+        motoRepository.deleteById(id);
+    }
+
 }

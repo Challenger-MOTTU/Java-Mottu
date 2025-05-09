@@ -35,4 +35,17 @@
         public ResponseEntity<MotoDTO> salvar(@RequestBody @Valid MotoDTO dto) {
             return ResponseEntity.ok(motoService.salvar(dto));
         }
+
+        @PutMapping("/{id}")
+        public ResponseEntity<MotoDTO> atualizar(@PathVariable Long id, @RequestBody @Valid MotoDTO dto) {
+            dto.setId(id);
+            return ResponseEntity.ok(motoService.atualizar(dto));
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deletar(@PathVariable Long id) {
+            motoService.deletar(id);
+            return ResponseEntity.noContent().build();
+        }
+
     }
