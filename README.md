@@ -1,6 +1,9 @@
 # 🚀 MotoGridAPI
 
-API REST desenvolvida para o projeto da 1ª Sprint do Challenge FIAP (Java Advanced). O sistema permite o **gerenciamento de motos e pátios**, com funcionalidades de CRUD, filtros, paginação, cache e documentação automática via Swagger.
+API REST desenvolvida para o projeto da **1ª Sprint do Challenge FIAP (Java Advanced)**.  
+O sistema permite o **gerenciamento de motos e pátios**, com funcionalidades de CRUD, filtros, paginação, cache, validações e documentação automática via Swagger.
+
+✅ Este projeto atende 100% dos requisitos técnicos exigidos pela entrega da Sprint 1.
 
 ---
 
@@ -112,14 +115,15 @@ Oferecer uma solução backend robusta para:
 - Gabriel Gomes Mancera (RM: 555427)
 - Victor Hugo Carvalho  (RM: 558550)
 - Juliana de Andrade Sousa (RM: 558834)
+
 ---
 
 ## ✅ Funcionalidades Extras
 
-- 🔍 Filtros por `placa` e `status`
+- 🔍 Filtros dinâmicos por `placa` e `status` da moto
 - 📃 Paginação com suporte ao `Pageable`
-- 💾 Cache para melhorar desempenho no endpoint `/motos`
-- ⚠️ Tratamento global de exceções
-- 🔄 DTOs para abstração das entidades
+- 💾 Cache para otimização no endpoint de listagem de motos
+- ⚠️ Tratamento global e centralizado de exceções
+- 🔄 Uso de DTOs para encapsulamento de dados e separação das entidades
 
 ---
