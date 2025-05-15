@@ -94,6 +94,34 @@ Oferecer uma solução backend robusta para:
 
 ---
 
+---
+
+
+### 🛵 `/motos`
+
+#### POST `/motos`
+```json
+{
+  "placa": "ABC1234",
+  "modelo": "Honda Biz",
+  "status": "DISPONIVEL",
+  "patioId": 1
+}
+```
+
+#### PUT `/motos/{id}`
+```json
+{
+  "id": 1,
+  "placa": "XYZ5678",
+  "modelo": "Yamaha Factor",
+  "status": "EM_MANUTENCAO",
+  "patioId": 1
+}
+```
+
+
+---
 
 ## ❌ Tratamento de Erros
 
@@ -147,34 +175,7 @@ Quando há erro interno inesperado, como sort inválido:
 
 Esse comportamento é implementado na classe `GlobalExceptionHandler` com `@RestControllerAdvice`.
 
----
 
-
-### 🛵 `/motos`
-
-#### POST `/motos`
-```json
-{
-  "placa": "ABC1234",
-  "modelo": "Honda Biz",
-  "status": "DISPONIVEL",
-  "patioId": 1
-}
-```
-
-#### PUT `/motos/{id}`
-```json
-{
-  "id": 1,
-  "placa": "XYZ5678",
-  "modelo": "Yamaha Factor",
-  "status": "EM_MANUTENCAO",
-  "patioId": 1
-}
-```
-
-
----
 
 
 ## 👥 Alunos Participantes
