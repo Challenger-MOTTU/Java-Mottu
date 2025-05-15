@@ -5,9 +5,7 @@ O sistema permite o **gerenciamento de motos e pátios**, com funcionalidades de
 
 ✅ Este projeto atende 100% dos requisitos técnicos exigidos pela entrega da Sprint 1.
 
-
 ---
-
 
 ## 🎯 Objetivo da API
 
@@ -15,12 +13,11 @@ Oferecer uma solução backend robusta para:
 - Cadastrar, atualizar e listar motos.
 - Relacionar motos a pátios.
 - Filtrar motos por status ou placa.
+- Validar e padronizar erros via DTO e tratamento global.
 - Gerenciar os pátios disponíveis.
 - Exibir documentação interativa via Swagger.
 
-
 ---
-
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -34,9 +31,7 @@ Oferecer uma solução backend robusta para:
 - Lombok
 - Maven
 
-
 ---
-
 
 ## ▶️ Instruções para Executar
 
@@ -58,15 +53,13 @@ Oferecer uma solução backend robusta para:
    ```
 
 3. Acesse os recursos:
-   - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-   - **H2 Console**: [http://localhost:8080/console](http://localhost:8080/console)
-      - JDBC URL: `jdbc:h2:mem:motogrid`
-      - Username: `sa`
-      - Password: (em branco)
-
+    - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+    - **H2 Console**: [http://localhost:8080/console](http://localhost:8080/console)
+        - JDBC URL: `jdbc:h2:mem:motogrid`
+        - Username: `sa`
+        - Password: (em branco)
 
 ---
-
 
 ## 🔗 Endpoints e Exemplos de Body
 
@@ -91,10 +84,7 @@ Oferecer uma solução backend robusta para:
 }
 ```
 
-
-
 ---
-
 
 ### 🛵 `/motos`
 
@@ -119,73 +109,69 @@ Oferecer uma solução backend robusta para:
 }
 ```
 
-
 ---
 
 ## ❌ Tratamento de Erros
 
-
-A API possui um mecanismo centralizado de tratamento de exceções, retornando respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`. Isso garante clareza nos testes e documentação Swagger.
+A API possui um mecanismo centralizado de tratamento de exceções, retornando respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`.
 
 ### 🔸 Erro de Validação (HTTP 422)
-
-Quando campos obrigatórios ou inválidos são enviados:
-
 ```json
 {
-  "timestamp": "2025-05-15T01:56:00",
   "status": 422,
   "error": "Erro de Validação",
   "messages": {
-    "placa": "A placa deve conter exatamente 7 caracteres.",
-    "nome": "O campo nome é obrigatório."
-  },
-  "path": "/motos"
+    "placa": "A placa é obrigatória",
+    "nome": "O nome do pátio é obrigatório"
+  }
 }
 ```
 
 ### 🔸 Entidade Não Encontrada (HTTP 404)
-
-Quando um recurso não existe no banco (ex: `/patios/99`):
-
 ```json
 {
-  "timestamp": "2025-05-15T01:55:00",
   "status": 404,
   "error": "Not Found",
-  "message": "Pátio não encontrado",
-  "path": "/patios/99"
+  "message": "Pátio não encontrado"
+}
+```
+
+### 🔸 Status Inválido no Filtro (HTTP 400)
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Status inválido. Use: DISPONIVEL, EM_USO, EM_MANUTENCAO ou INATIVA."
+}
+```
+
+### 🔸 ID do PUT divergente (HTTP 400)
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "ID do corpo e da URL não conferem"
 }
 ```
 
 ### 🔸 Erro Genérico (HTTP 500)
-
-Quando há erro interno inesperado, como sort inválido:
-
 ```json
 {
-  "timestamp": "2025-05-15T01:57:00",
   "status": 500,
   "error": "Internal Server Error",
-  "message": "Erro interno: No property 'string' found for type 'Moto'",
-  "path": "/motos/buscar/placa"
+  "message": "Erro interno: ..."
 }
 ```
 
-Esse comportamento é implementado na classe `GlobalExceptionHandler` com `@RestControllerAdvice`.
-
 ---
-
 
 ## 👥 Alunos Participantes
 
 - Gabriel Gomes Mancera (RM: 555427)
-- Victor Hugo Carvalho  (RM: 558550)
+- Victor Hugo Carvalho (RM: 558550)
 - Juliana de Andrade Sousa (RM: 558834)
 
-
 ---
-
 
 ## ✅ Funcionalidades Extras
 
@@ -193,7 +179,6 @@ Esse comportamento é implementado na classe `GlobalExceptionHandler` com `@Rest
 - 📃 Paginação com suporte ao `Pageable`
 - 💾 Cache para otimização no endpoint de listagem de motos
 - ⚠️ Tratamento global e centralizado de exceções
-- 🔄 Uso de DTOs para encapsulamento de dados e separação das entidades
-
-
----
+- 🔄 Uso de DTOs para encapsulamento de dados
+- 🛑 Validação de enums com mensagem 400 personalizada
+- 🔐 Validação de consistência entre ID da URL e do corpo no PUT
