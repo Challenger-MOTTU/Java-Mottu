@@ -92,7 +92,6 @@ Oferecer uma solução backend robusta para:
 ```
 
 
----
 
 ---
 
@@ -175,7 +174,7 @@ Quando há erro interno inesperado, como sort inválido:
 
 Esse comportamento é implementado na classe `GlobalExceptionHandler` com `@RestControllerAdvice`.
 
-
+---
 
 
 ## 👥 Alunos Participantes
