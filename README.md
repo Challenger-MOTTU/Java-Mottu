@@ -5,7 +5,9 @@ O sistema permite o **gerenciamento de motos e pátios**, com funcionalidades de
 
 ✅ Este projeto atende 100% dos requisitos técnicos exigidos pela entrega da Sprint 1.
 
+
 ---
+
 
 ## 🎯 Objetivo da API
 
@@ -16,7 +18,9 @@ Oferecer uma solução backend robusta para:
 - Gerenciar os pátios disponíveis.
 - Exibir documentação interativa via Swagger.
 
+
 ---
+
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -30,7 +34,9 @@ Oferecer uma solução backend robusta para:
 - Lombok
 - Maven
 
+
 ---
+
 
 ## ▶️ Instruções para Executar
 
@@ -52,13 +58,15 @@ Oferecer uma solução backend robusta para:
    ```
 
 3. Acesse os recursos:
-    - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-    - **H2 Console**: [http://localhost:8080/console](http://localhost:8080/console)
-        - JDBC URL: `jdbc:h2:mem:motogrid`
-        - Username: `sa`
-        - Password: (em branco)
+   - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+   - **H2 Console**: [http://localhost:8080/console](http://localhost:8080/console)
+      - JDBC URL: `jdbc:h2:mem:motogrid`
+      - Username: `sa`
+      - Password: (em branco)
+
 
 ---
+
 
 ## 🔗 Endpoints e Exemplos de Body
 
@@ -83,7 +91,64 @@ Oferecer uma solução backend robusta para:
 }
 ```
 
+
 ---
+
+
+## ❌ Tratamento de Erros
+
+
+A API possui um mecanismo centralizado de tratamento de exceções, retornando respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`. Isso garante clareza nos testes e documentação Swagger.
+
+### 🔸 Erro de Validação (HTTP 422)
+
+Quando campos obrigatórios ou inválidos são enviados:
+
+```json
+{
+  "timestamp": "2025-05-15T01:56:00",
+  "status": 422,
+  "error": "Erro de Validação",
+  "messages": {
+    "placa": "A placa deve conter exatamente 7 caracteres.",
+    "nome": "O campo nome é obrigatório."
+  },
+  "path": "/motos"
+}
+```
+
+### 🔸 Entidade Não Encontrada (HTTP 404)
+
+Quando um recurso não existe no banco (ex: `/patios/99`):
+
+```json
+{
+  "timestamp": "2025-05-15T01:55:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Pátio não encontrado",
+  "path": "/patios/99"
+}
+```
+
+### 🔸 Erro Genérico (HTTP 500)
+
+Quando há erro interno inesperado, como sort inválido:
+
+```json
+{
+  "timestamp": "2025-05-15T01:57:00",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "Erro interno: No property 'string' found for type 'Moto'",
+  "path": "/motos/buscar/placa"
+}
+```
+
+Esse comportamento é implementado na classe `GlobalExceptionHandler` com `@RestControllerAdvice`.
+
+---
+
 
 ### 🛵 `/motos`
 
@@ -108,7 +173,9 @@ Oferecer uma solução backend robusta para:
 }
 ```
 
+
 ---
+
 
 ## 👥 Alunos Participantes
 
@@ -116,7 +183,9 @@ Oferecer uma solução backend robusta para:
 - Victor Hugo Carvalho  (RM: 558550)
 - Juliana de Andrade Sousa (RM: 558834)
 
+
 ---
+
 
 ## ✅ Funcionalidades Extras
 
@@ -125,5 +194,61 @@ Oferecer uma solução backend robusta para:
 - 💾 Cache para otimização no endpoint de listagem de motos
 - ⚠️ Tratamento global e centralizado de exceções
 - 🔄 Uso de DTOs para encapsulamento de dados e separação das entidades
+
+
+---
+
+
+## ❌ Tratamento de Erros
+
+A API possui um mecanismo centralizado de tratamento de exceções, retornando respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`. Isso garante clareza nos testes e documentação Swagger.
+
+### 🔸 Erro de Validação (HTTP 422)
+
+Quando campos obrigatórios ou inválidos são enviados:
+
+```json
+{
+  "timestamp": "2025-05-15T01:56:00",
+  "status": 422,
+  "error": "Erro de Validação",
+  "messages": {
+    "placa": "A placa deve conter exatamente 7 caracteres.",
+    "nome": "O campo nome é obrigatório."
+  },
+  "path": "/motos"
+}
+```
+
+### 🔸 Entidade Não Encontrada (HTTP 404)
+
+Quando um recurso não existe no banco (ex: `/patios/99`):
+
+```json
+{
+  "timestamp": "2025-05-15T01:55:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Pátio não encontrado",
+  "path": "/patios/99"
+}
+```
+
+### 🔸 Erro Genérico (HTTP 500)
+
+Quando há erro interno inesperado, como sort inválido:
+
+```json
+{
+  "timestamp": "2025-05-15T01:57:00",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "Erro interno: No property 'string' found for type 'Moto'",
+  "path": "/motos/buscar/placa"
+}
+```
+
+Esse comportamento é implementado na classe `GlobalExceptionHandler` com `@RestControllerAdvice`.
+
 
 ---
