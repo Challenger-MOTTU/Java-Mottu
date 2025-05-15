@@ -3,14 +3,18 @@ package com.motogrid.api.service;
 import com.motogrid.api.dto.MotoDTO;
 import com.motogrid.api.model.Moto;
 import com.motogrid.api.model.Patio;
+import com.motogrid.api.model.StatusMoto;
 import com.motogrid.api.repository.MotoRepository;
 import com.motogrid.api.repository.PatioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +33,47 @@ public class MotoService {
     }
 
     public Page<MotoDTO> buscarPorStatus(String status, Pageable pageable) {
-        return motoRepository.findByStatus(Enum.valueOf(com.motogrid.api.model.StatusMoto.class, status.toUpperCase()), pageable)
-                .map(this::toDTO);
+        try {
+            StatusMoto statusEnum = StatusMoto.valueOf(status.toUpperCase());
+            return motoRepository.findByStatus(statusEnum, pageable).map(this::toDTO);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Status inválido. Use: DISPONIVEL, EM_USO, EM_MANUTENCAO ou INATIVA."
+            );
+        }
     }
 
+    @CacheEvict(value = "motos", allEntries = true)
     public MotoDTO salvar(MotoDTO dto) {
         Moto moto = toEntity(dto);
         Moto salvo = motoRepository.save(moto);
         return toDTO(salvo);
+    }
+
+    @CacheEvict(value = "motos", allEntries = true)
+    public MotoDTO atualizar(MotoDTO dto) {
+        Moto existente = motoRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada"));
+
+        existente.setModelo(dto.getModelo());
+        existente.setPlaca(dto.getPlaca());
+        existente.setStatus(dto.getStatus());
+
+        Patio patio = patioRepository.findById(dto.getPatioId())
+                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+
+        existente.setPatio(patio);
+
+        return toDTO(motoRepository.save(existente));
+    }
+
+    @CacheEvict(value = "motos", allEntries = true)
+    public void deletar(Long id) {
+        if (!motoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Moto não encontrada");
+        }
+        motoRepository.deleteById(id);
     }
 
     private Moto toEntity(MotoDTO dto) {
@@ -62,28 +99,4 @@ public class MotoService {
         dto.setPatioId(moto.getPatio().getId());
         return dto;
     }
-
-    public MotoDTO atualizar(MotoDTO dto) {
-        Moto existente = motoRepository.findById(dto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada"));
-
-        existente.setModelo(dto.getModelo());
-        existente.setPlaca(dto.getPlaca());
-        existente.setStatus(dto.getStatus());
-
-        Patio patio = patioRepository.findById(dto.getPatioId())
-                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
-
-        existente.setPatio(patio);
-
-        return toDTO(motoRepository.save(existente));
-    }
-
-    public void deletar(Long id) {
-        if (!motoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Moto não encontrada");
-        }
-        motoRepository.deleteById(id);
-    }
-
 }

@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotFound(EntityNotFoundException ex, HttpServletRequest request) {
         return buildErrorResponse(
                 HttpStatus.NOT_FOUND,
-                ex.getMessage(), // ex: "Pátio não encontrado"
+                ex.getMessage(),
                 request.getRequestURI()
         );
     }
@@ -40,6 +41,16 @@ public class GlobalExceptionHandler {
         body.put("path", request.getRequestURI());
 
         return ResponseEntity.unprocessableEntity().body(body);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex, HttpServletRequest request) {
+        return buildErrorResponse(
+                HttpStatus.valueOf(ex.getStatusCode().value()),
+                ex.getReason(),
+                request.getRequestURI()
+        );
+
     }
 
     @ExceptionHandler(Exception.class)

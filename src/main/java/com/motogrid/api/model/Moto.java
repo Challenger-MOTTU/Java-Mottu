@@ -1,8 +1,6 @@
 package com.motogrid.api.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Entity
@@ -13,12 +11,9 @@ public class Moto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "A placa é obrigatória")
-    @Size(min = 7, max = 8)
     @Column(unique = true)
     private String placa;
 
-    @NotBlank(message = "O modelo é obrigatório")
     private String modelo;
 
     @Enumerated(EnumType.STRING)
