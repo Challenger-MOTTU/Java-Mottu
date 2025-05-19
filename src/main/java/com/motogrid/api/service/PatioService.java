@@ -5,12 +5,11 @@ import com.motogrid.api.model.Patio;
 import com.motogrid.api.repository.PatioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +17,10 @@ public class PatioService {
 
     private final PatioRepository patioRepository;
 
-    public List<PatioDTO> listarTodos() {
-        return patioRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    // Novo método com suporte a paginação
+    public Page<PatioDTO> listarTodos(Pageable pageable) {
+        return patioRepository.findAll(pageable)
+                .map(this::toDTO);
     }
 
     public PatioDTO buscarPorId(Long id) {
@@ -51,6 +49,17 @@ public class PatioService {
         patioRepository.deleteById(id);
     }
 
+    public PatioDTO atualizar(PatioDTO dto) {
+        Patio existente = patioRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+
+        existente.setNome(dto.getNome());
+        existente.setCidade(dto.getCidade());
+        existente.setCapacidade(dto.getCapacidade());
+
+        return toDTO(patioRepository.save(existente));
+    }
+
     private Patio toEntity(PatioDTO dto) {
         Patio p = new Patio();
         p.setId(dto.getId());
@@ -67,16 +76,5 @@ public class PatioService {
         dto.setCidade(patio.getCidade());
         dto.setCapacidade(patio.getCapacidade());
         return dto;
-    }
-
-    public PatioDTO atualizar(PatioDTO dto) {
-        Patio existente = patioRepository.findById(dto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
-
-        existente.setNome(dto.getNome());
-        existente.setCidade(dto.getCidade());
-        existente.setCapacidade(dto.getCapacidade());
-
-        return toDTO(patioRepository.save(existente));
     }
 }

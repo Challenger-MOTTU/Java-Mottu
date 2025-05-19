@@ -4,10 +4,11 @@ import com.motogrid.api.dto.PatioDTO;
 import com.motogrid.api.service.PatioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/patios")
@@ -17,8 +18,8 @@ public class PatioController {
     private final PatioService patioService;
 
     @GetMapping
-    public ResponseEntity<List<PatioDTO>> listarTodos() {
-        return ResponseEntity.ok(patioService.listarTodos());
+    public ResponseEntity<Page<PatioDTO>> listarTodos(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(patioService.listarTodos(pageable));
     }
 
     @GetMapping("/{id}")
@@ -31,16 +32,15 @@ public class PatioController {
         return ResponseEntity.ok(patioService.salvar(dto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        patioService.deletar(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<PatioDTO> atualizar(@PathVariable Long id, @RequestBody @Valid PatioDTO dto) {
         dto.setId(id);
         return ResponseEntity.ok(patioService.atualizar(dto));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        patioService.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
