@@ -5,7 +5,9 @@ import com.motogrid.api.model.Patio;
 import com.motogrid.api.repository.PatioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +38,16 @@ public class PatioService {
     }
 
     public void deletar(Long id) {
+        Patio patio = patioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+
+        if (patio.getMotos() != null && !patio.getMotos().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Não é possível deletar um pátio com motos vinculadas"
+            );
+        }
+
         patioRepository.deleteById(id);
     }
 
@@ -67,5 +79,4 @@ public class PatioService {
 
         return toDTO(patioRepository.save(existente));
     }
-
 }

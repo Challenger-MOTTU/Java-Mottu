@@ -19,7 +19,6 @@ public class Patio {
 
     private int capacidade;
 
-    @OneToMany(mappedBy = "patio")
+    @OneToMany(mappedBy = "patio", fetch = FetchType.EAGER)
     private List<Moto> motos;
 }
-
