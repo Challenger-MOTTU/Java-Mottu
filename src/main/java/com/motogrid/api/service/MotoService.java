@@ -1,6 +1,5 @@
 package com.motogrid.api.service;
 
-import com.motogrid.api.dto.MotoDTO;
 import com.motogrid.api.model.Moto;
 import com.motogrid.api.model.Patio;
 import com.motogrid.api.model.StatusMoto;
@@ -24,18 +23,18 @@ public class MotoService {
     private final PatioRepository patioRepository;
 
     @Cacheable("motos")
-    public Page<MotoDTO> listar(Pageable pageable) {
-        return motoRepository.findAll(pageable).map(this::toDTO);
+    public Page<Moto> listar(Pageable pageable) {
+        return motoRepository.findAll(pageable);
     }
 
-    public Page<MotoDTO> buscarPorPlaca(String placa, Pageable pageable) {
-        return motoRepository.findByPlacaContainingIgnoreCase(placa, pageable).map(this::toDTO);
+    public Page<Moto> buscarPorPlaca(String placa, Pageable pageable) {
+        return motoRepository.findByPlacaContainingIgnoreCase(placa, pageable);
     }
 
-    public Page<MotoDTO> buscarPorStatus(String status, Pageable pageable) {
+    public Page<Moto> buscarPorStatus(String status, Pageable pageable) {
         try {
             StatusMoto statusEnum = StatusMoto.valueOf(status.toUpperCase());
-            return motoRepository.findByStatus(statusEnum, pageable).map(this::toDTO);
+            return motoRepository.findByStatus(statusEnum, pageable);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -45,27 +44,33 @@ public class MotoService {
     }
 
     @CacheEvict(value = "motos", allEntries = true)
-    public MotoDTO salvar(MotoDTO dto) {
-        Moto moto = toEntity(dto);
-        Moto salvo = motoRepository.save(moto);
-        return toDTO(salvo);
+    public Moto salvar(Moto moto) {
+        Long patioId = (moto.getPatio() != null) ? moto.getPatio().getId() : null;
+        if (patioId == null) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "patioId é obrigatório");
+        }
+        Patio patio = patioRepository.findById(patioId)
+                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+        moto.setPatio(patio);
+        return motoRepository.save(moto);
     }
 
     @CacheEvict(value = "motos", allEntries = true)
-    public MotoDTO atualizar(MotoDTO dto) {
-        Moto existente = motoRepository.findById(dto.getId())
+    public Moto atualizar(Long id, Moto moto) {
+        Moto existente = motoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada"));
 
-        existente.setModelo(dto.getModelo());
-        existente.setPlaca(dto.getPlaca());
-        existente.setStatus(dto.getStatus());
+        existente.setModelo(moto.getModelo());
+        existente.setPlaca(moto.getPlaca());
+        existente.setStatus(moto.getStatus());
 
-        Patio patio = patioRepository.findById(dto.getPatioId())
-                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+        if (moto.getPatio() != null && moto.getPatio().getId() != null) {
+            Patio patio = patioRepository.findById(moto.getPatio().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+            existente.setPatio(patio);
+        }
 
-        existente.setPatio(patio);
-
-        return toDTO(motoRepository.save(existente));
+        return motoRepository.save(existente);
     }
 
     @CacheEvict(value = "motos", allEntries = true)
@@ -74,29 +79,5 @@ public class MotoService {
             throw new EntityNotFoundException("Moto não encontrada");
         }
         motoRepository.deleteById(id);
-    }
-
-    private Moto toEntity(MotoDTO dto) {
-        Moto moto = new Moto();
-        moto.setId(dto.getId());
-        moto.setPlaca(dto.getPlaca());
-        moto.setModelo(dto.getModelo());
-        moto.setStatus(dto.getStatus());
-
-        Patio patio = patioRepository.findById(dto.getPatioId())
-                .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
-
-        moto.setPatio(patio);
-        return moto;
-    }
-
-    private MotoDTO toDTO(Moto moto) {
-        MotoDTO dto = new MotoDTO();
-        dto.setId(moto.getId());
-        dto.setPlaca(moto.getPlaca());
-        dto.setModelo(moto.getModelo());
-        dto.setStatus(moto.getStatus());
-        dto.setPatioId(moto.getPatio().getId());
-        return dto;
     }
 }
