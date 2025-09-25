@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>MotoGrid</title>
+    <link rel="icon" th:href="@{/img/motogrid.png}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+
+</head>
+<body>
+<th:block th:replace="fragments/header :: header"></th:block>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm p-4">
+            <h1 class="mb-2">Bem-vindo ao MotoGrid</h1>
+            <p class="text-secondary">Use o menu para navegar entre Motos e Pátios.</p>
+            <div class="d-flex gap-2 mt-3">
+                <a class="btn btn-primary" th:href="@{/web/motos}">Ir para Motos</a>
+                <a class="btn btn-outline-secondary" th:href="@{/web/patios}">Ir para Pátios</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="fragments/footer :: footer"></th:block>
+</body>
+</html>

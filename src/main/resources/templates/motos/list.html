@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Motos - MotoGrid</title>
+    <link rel="icon" th:href="@{/img/motogrid.png}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+
+</head>
+<body>
+<th:block th:replace="fragments/header :: header"></th:block>
+
+<div class="card shadow-sm p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="mb-0">Motos</h2>
+        <a class="btn btn-primary" th:href="@{/web/motos/novo}">Nova moto</a>
+    </div>
+
+    <table class="table table-hover align-middle">
+        <thead>
+        <tr>
+            <th>Placa</th>
+            <th>Modelo</th>
+            <th>Status</th>
+            <th>Pátio</th>
+            <th style="width:200px"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m : ${page.content}">
+            <td th:text="${m.placa}"></td>
+            <td th:text="${m.modelo}"></td>
+            <td>
+           <span class="badge"
+                 th:classappend="${
+          (m.status == T(com.motogrid.api.model.StatusMoto).DISPONIVEL) ? ' badge-success' :
+          ((m.status == T(com.motogrid.api.model.StatusMoto).EM_USO) ? ' badge-primary' :
+          ((m.status == T(com.motogrid.api.model.StatusMoto).EM_MANUTENCAO) ? ' badge-warning' : ' badge-secondary'))
+      }"
+                 th:text="${m.status}">
+</span>
+
+            </td>
+            <td th:text="${m.patioId}"></td>
+            <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" th:href="@{/web/motos/{id}/editar(id=${m.id})}">Editar</a>
+                <form th:action="@{/web/motos/{id}/excluir(id=${m.id})}" method="post" style="display:inline">
+                    <button class="btn btn-sm btn-danger" type="submit">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <nav th:if="${page.totalPages > 1}">
+        <ul class="pagination mb-0">
+            <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                <a class="page-link" th:href="@{|/web/motos?page=${page.number-1}&sort=${sort}&dir=${dir}|}">Anterior</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link" th:text="${page.number + 1} + ' / ' + ${page.totalPages}">1 / 1</span>
+            </li>
+            <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                <a class="page-link" th:href="@{|/web/motos?page=${page.number+1}&sort=${sort}&dir=${dir}|}">Próxima</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<th:block th:replace="fragments/footer :: footer"></th:block>
+</body>
+</html>

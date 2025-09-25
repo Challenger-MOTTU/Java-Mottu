@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root{
+    --bg:#0f172a;          /* slate-900 */
+    --muted:#94a3b8;       /* slate-400 */
+    --fg:#e2e8f0;          /* slate-200 */
+    --brand:#6366f1;       /* indigo-500 */
+    --brand2:#22d3ee;      /* cyan-400 */
+    --card:#111827;        /* gray-900 */
+    --border:rgba(255,255,255,.08);
+}
+
+html,body{height:100%}
+body{
+    background:
+            radial-gradient(1200px 600px at 80% -10%, rgba(99,102,241,.15), transparent 70%),
+            radial-gradient(1000px 500px at -10% 20%, rgba(34,211,238,.12), transparent 60%),
+            var(--bg);
+    color:var(--fg);
+    font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+.navbar{
+    background:linear-gradient(90deg, rgba(15,23,42,.95), rgba(2,6,23,.95));
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(8px);
+}
+
+.card{
+    background-color:var(--card);
+    border:1px solid var(--border);
+    border-radius:1rem;
+}
+
+.table{color:var(--fg)}
+.table thead th{
+    border-color:var(--border);
+    color:var(--muted);
+    text-transform:uppercase;
+    font-size:.80rem;
+    letter-spacing:.04em;
+}
+.table-hover tbody tr:hover{background:rgba(255,255,255,.03)}
+.table tbody tr{border-color:var(--border)}
+
+.btn-primary{
+    background-image:linear-gradient(135deg, var(--brand), var(--brand2));
+    border:0;
+}
+.btn-outline-secondary{border-color:var(--border); color:var(--fg)}
+.btn-outline-secondary:hover{background:rgba(255,255,255,.05); color:var(--fg); border-color:var(--fg)}
+
+.badge{border-radius:.5rem; padding:.5em .6em; font-weight:600}
+.badge-success{background:rgba(16,185,129,.2); color:#34d399}
+.badge-primary{background:rgba(59,130,246,.18); color:#93c5fd}
+.badge-warning{background:rgba(245,158,11,.2); color:#fbbf24}
+.badge-secondary{background:rgba(148,163,184,.2); color:#cbd5e1}
+
+a, .nav-link{color:var(--fg)}
+a:hover, .nav-link:hover{color:#fff}
+
+/* leve gradiente na navbar */
+.navbar {
+    background: linear-gradient(90deg, rgba(13,110,253,.85), rgba(32,201,151,.85));
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(8px);
+}
