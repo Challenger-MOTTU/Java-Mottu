@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -35,6 +36,7 @@ public class MotoWebController {
         return "motos/list";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/novo")
     public String novo(Model model) {
         model.addAttribute("moto", new MotoDTO());
@@ -43,6 +45,7 @@ public class MotoWebController {
         return "motos/form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model) {
         Moto m = motoService.buscarPorId(id);
@@ -52,6 +55,7 @@ public class MotoWebController {
         return "motos/form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     /** Salva criação ou atualização (usa id no DTO para diferenciar) */
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("moto") MotoDTO dto, BindingResult br, Model model) {
@@ -68,6 +72,7 @@ public class MotoWebController {
         return "redirect:/web/motos";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/excluir")
     public String excluir(@PathVariable Long id) {
         motoService.deletar(id);

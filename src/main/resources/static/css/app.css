@@ -21,8 +21,8 @@ body{
 }
 
 .navbar{
-    background:linear-gradient(90deg, rgba(15,23,42,.95), rgba(2,6,23,.95));
-    border-bottom:1px solid var(--border);
+    background: linear-gradient(90deg, rgba(13,110,253,.85), rgba(32,201,151,.85));
+    border-bottom:1px solid rgba(255,255,255,.08);
     backdrop-filter:blur(8px);
 }
 
@@ -58,10 +58,3 @@ body{
 
 a, .nav-link{color:var(--fg)}
 a:hover, .nav-link:hover{color:#fff}
-
-/* leve gradiente na navbar */
-.navbar {
-    background: linear-gradient(90deg, rgba(13,110,253,.85), rgba(32,201,151,.85));
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    backdrop-filter: blur(8px);
-}

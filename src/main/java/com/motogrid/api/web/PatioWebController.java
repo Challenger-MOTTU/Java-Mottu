@@ -6,6 +6,7 @@ import com.motogrid.api.service.PatioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -30,18 +31,21 @@ public class PatioWebController {
         return "patios/list";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/novo")
     public String novo(Model model) {
         model.addAttribute("patio", new PatioDTO());
         return "patios/form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model) {
         model.addAttribute("patio", PatioMapper.toDTO(patioService.buscarPorId(id)));
         return "patios/form";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("patio") PatioDTO dto, BindingResult br) {
         if (br.hasErrors()) return "patios/form";
@@ -50,6 +54,7 @@ public class PatioWebController {
         return "redirect:/web/patios";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/excluir")
     public String excluir(@PathVariable Long id) {
         patioService.deletar(id);
