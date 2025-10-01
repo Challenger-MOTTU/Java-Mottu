@@ -7,6 +7,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - **Banco H2 in-memory** com **Flyway** (4 migrações + *seed*).
 - **API REST** documentada por **Swagger/OpenAPI**.
 - **Validações (Jakarta)**, tratamento de erros e **tema escuro** com **Bootswatch Darkly** + CSS customizado.
+- **Fluxo adicional:** **Exportação de Motos para CSV** diretamente da tela de lista (**botões “Exportar CSV”**).
 
 ---
 
@@ -15,6 +16,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - [Como Rodar](#como-rodar)
 - [Login, Perfis e Autorização](#login-perfis-e-autorização)
 - [Frontend (Thymeleaf)](#frontend-thymeleaf)
+- [Fluxo Adicional — Exportar CSV](#fluxo-adicional--exportar-csv)
 - [Banco de Dados & Flyway](#banco-de-dados--flyway)
 - [API REST & Swagger](#api-rest--swagger)
 - [Tratamento de Erros (REST)](#tratamento-de-erros-rest)
@@ -104,7 +106,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - `templates/home.html` — Boas-vindas e navegação rápida.
 - `templates/login.html` — Tela de login (mensagens de erro/sucesso).
 - `templates/access-denied.html` — 403 (acesso negado).
-- `templates/motos/list.html` — Lista com **badges** por status e ações (condicionais por perfil).
+- `templates/motos/list.html` — Lista com **badges** por status, ações (condicionais por perfil) e **botões para exportar CSV**.
 - `templates/motos/form.html` — Form para criar/editar (CSRF + validações).
 - `templates/patios/list.html` — Lista com ações.
 - `templates/patios/form.html` — Form para criar/editar (CSRF + validações).
@@ -118,6 +120,42 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
         - `EM_USO` → primary
         - `EM_MANUTENCAO` → warning
         - outros → secondary
+
+---
+
+## Fluxo Adicional — Exportar CSV
+
+Permite baixar a lista de motos em **CSV** diretamente da tela **Motos**.
+
+**Como usar (UI):**
+- Na página **Motos**, clique em **Exportar CSV (,)** ou **Exportar CSV (;)**.
+    - A opção **(,)** gera separação por vírgula (padrão internacional).
+    - A opção **(;)** facilita abrir no **Excel pt-BR** sem precisar alterar configurações regionais.
+
+**Endpoint (usado pela UI):**
+```
+GET /web/motos/export?status=<opcional>&patioId=<opcional>&sep=<opcional>
+```
+
+**Parâmetros (opcionais):**
+- `status` — filtra por status (`DISPONIVEL`, `EM_USO`, `EM_MANUTENCAO`, `INATIVA`).
+- `patioId` — filtra por pátio (ID).
+- `sep` — separador do CSV. Padrão `,`. Use `;` para Excel pt-BR.
+
+**Formato do arquivo:**
+- Primeira linha `sep=,` (ou `sep=;`) para o Excel reconhecer o separador.
+- Arquivo em **UTF-8 com BOM** (acentos corretos).
+- Cabeçalho: `Placa,Modelo,Status,Pátio` (usa **nome** do pátio).
+- Campos com vírgula/;/" ou quebra de linha vêm **entre aspas**.
+
+**Exemplos rápidos:**
+```
+/web/motos/export
+/web/motos/export?sep=;
+/web/motos/export?status=EM_USO&patioId=1
+```
+
+**Segurança:** requer autenticação; disponível para `ADMIN` e `OPERADOR` (mesmo controle de `/web/**`).
 
 ---
 
@@ -252,6 +290,34 @@ Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `
 
 ---
 
+## Estrutura de Pastas
+```
+src/
+  main/
+    java/com/motogrid/api/...
+      config/            # SecurityConfig, etc.
+      controller/        # REST controllers
+      dto/               # DTOs + mappers
+      exception/         # Handler global de erros REST
+      model/             # Entidades JPA
+      repository/        # Spring Data JPA
+      service/           # Regras de negócio
+      web/               # Controllers Thymeleaf
+    resources/
+      db/migration/      # Migrações Flyway (V1..V4)
+      static/
+        css/app.css
+        img/motogrid.png
+      templates/
+        fragments/       # head, header, footer
+        motos/           # list, form
+        patios/          # list, form
+        access-denied.html
+        home.html
+        login.html
+```
+
+---
 
 ## Roteiro de Testes (passo a passo)
 
@@ -271,46 +337,29 @@ Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `
 4. **Motos → Nova moto** vinculando a um pátio existente.
 5. **Editar** e **excluir** uma moto.
 
-### C) Validações
+### C) Fluxo adicional — Exportar CSV
+1. Em **/web/motos**, clique **Exportar CSV (,)** → abra no Excel: colunas e acentos corretos.
+2. Clique **Exportar CSV (;)** → Excel pt-BR abre sem ajustes regionais.
+3. Teste filtros via URL (ex.: `?status=EM_USO&patioId=1`).
+
+### D) Validações
 1. Tente salvar **pátio** sem `nome`/`cidade` → mensagens de erro ao lado dos campos.
 2. Tente salvar **moto** sem `placa`/`modelo` ou sem `patioId` → mensagens de erro.
 3. Se houver regra de placa, teste formato inválido → deve rejeitar.
 
-### D) API REST (Swagger)
+### E) API REST (Swagger)
 1. Logado, abra `/swagger-ui.html`.
 2. Execute `GET /patios` e `GET /motos` → deve listar seed + registros criados.
 3. Com **ADMIN**, teste `POST/PUT/DELETE` para ambos recursos.
 4. Com **OPERADOR**, `POST/PUT/DELETE` devem falhar com **403** (ou 401, conforme o caso).
 
-### E) H2 & Migrações
+### F) H2 & Migrações
 1. Acesse `/console` e conecte (`jdbc:h2:mem:motogrid`).
 2. Verifique as tabelas (`PATIO`, `MOTO`) e a tabela do **Flyway**.
 3. Confira dados de **seed** (V4).
 
 ---
 
-## Troubleshooting
-
-- **“Port 8080 was already in use”**  
-  Algum processo ocupa a porta. Soluções:
-    - Finalize o processo na 8080 **ou**
-    - Altere a porta em `src/main/resources/application.properties`:
-      ```
-      server.port=8081
-      ```
-
-- **Logout abrindo `/logout` na URL dá erro**  
-  O logout é **POST** com CSRF. Use o botão **Sair** na navbar.
-
-- **CSS/Imagens não carregam**
-    - `head.html` referencia `@{/css/app.css}` e o arquivo existe em `static/css/app.css`.
-    - Favicon/logo: `@{/img/motogrid.png}` existe em `static/img/motogrid.png`.
-    - Evite sobrescrever CDNs: o projeto usa **Bootswatch Darkly** e `app.css`.
-
-- **Swagger “sem sessão”**  
-  Faça **login** antes em `/login` e reabra o **Swagger** na **mesma aba**.
-
----
 
 ## Autores
 - **Gabriel Gomes Mancera** (RM: 555427)

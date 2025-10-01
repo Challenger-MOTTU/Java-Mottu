@@ -1,25 +1,43 @@
 <div th:fragment="header" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <nav class="navbar navbar-expand-lg navbar-dark px-3 mb-4">
-        <a class="navbar-brand fw-bold" th:href="@{/web}">MotoGrid</a>
+        <!-- Brand: logo + nome -->
+        <a class="navbar-brand d-flex align-items-center fw-bold" th:href="@{/web}">
+            <img class="brand-logo me-2" th:src="@{/img/motogrid.png}" alt="MotoGrid">
+            <span>MotoGrid</span>
+        </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
                 aria-controls="nav" aria-expanded="false" aria-label="Alternar navegação">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div id="nav" class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto gap-2">
-                <li class="nav-item"><a class="nav-link" th:href="@{/web/motos}">Motos</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/web/patios}">Pátios</a></li>
-
-                <!-- Logout como POST -->
-                <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <form th:action="@{/logout}" method="post" class="d-inline">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="btn btn-link nav-link p-0">Sair</button>
-                    </form>
+        <!-- th:with cria uma variável 'uri' mas evita NPE quando não há request (ex.: páginas de erro) -->
+        <div id="nav" class="collapse navbar-collapse align-items-center"
+             th:with="uri=${#httpServletRequest != null ? #httpServletRequest.requestURI : ''}">
+            <ul class="navbar-nav me-auto gap-2">
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/web/motos}"
+                       th:classappend="${#strings.startsWith(uri,'/web/motos')} ? ' active' : ''">
+                        Motos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/web/patios}"
+                       th:classappend="${#strings.startsWith(uri,'/web/patios')} ? ' active' : ''">
+                        Pátios
+                    </a>
                 </li>
             </ul>
+
+            <!-- Direita: botão Sair (POST) -->
+            <div class="ms-auto" sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-outline-light btn-sm px-3">Sair</button>
+                </form>
+            </div>
         </div>
     </nav>
 </div>

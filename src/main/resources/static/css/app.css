@@ -56,5 +56,22 @@ body{
 .badge-warning{background:rgba(245,158,11,.2); color:#fbbf24}
 .badge-secondary{background:rgba(148,163,184,.2); color:#cbd5e1}
 
+.navbar-brand .brand-logo{ height:28px; width:auto; border-radius:4px; }
+.navbar .nav-link.active{ font-weight:600; color:#fff; }
+.navbar .btn-outline-light.btn-sm{ border-color:rgba(255,255,255,.55); }
+.navbar .btn-outline-light.btn-sm:hover{ border-color:#fff; }
+
+
 a, .nav-link{color:var(--fg)}
 a:hover, .nav-link:hover{color:#fff}
+
+.navbar .btn-outline-light.btn-sm{
+    color:#fff;
+    border-color:rgba(255,255,255,.95);
+    background:rgba(0,0,0,.18);
+}
+
+.navbar .btn-outline-light.btn-sm:hover{
+    background:rgba(255,255,255,.18);
+    border-color:#fff;
+}

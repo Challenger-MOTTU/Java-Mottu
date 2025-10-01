@@ -29,45 +29,46 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/login"
                         ).permitAll()
-
-                        // Páginas Thymeleaf (/web/**)
                         .requestMatchers(HttpMethod.GET, "/web/**").hasAnyRole("ADMIN","OPERADOR")
-                        // criar/atualizar via form  -> SOMENTE ADMIN
-                        .requestMatchers(HttpMethod.POST, "/web/**/salvar").hasRole("ADMIN")
-                        // excluir via form
-                        .requestMatchers(HttpMethod.POST, "/web/**/excluir", "/web/**/excluir/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,
+                                "/web/motos/salvar",
+                                "/web/motos/{id}/salvar",
+                                "/web/patios/salvar",
+                                "/web/patios/{id}/salvar"
+                        ).hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,
+                                "/web/motos/excluir",
+                                "/web/motos/excluir/{id}",
+                                "/web/motos/{id}/excluir",
+                                "/web/patios/excluir",
+                                "/web/patios/excluir/{id}",
+                                "/web/patios/{id}/excluir"
+                        ).hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.PUT, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/web/**").hasRole("ADMIN")
                         .requestMatchers("/web/**").hasRole("ADMIN")
-
-                        // REST
                         .requestMatchers(HttpMethod.GET, "/motos/**","/patios/**").hasAnyRole("ADMIN","OPERADOR")
-                        // -> SOMENTE ADMIN em POST/PUT/DELETE
                         .requestMatchers(HttpMethod.POST, "/motos/**","/patios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,  "/motos/**","/patios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/motos/**","/patios/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
-
-                // CSRF: manter em /web/**; ignorar APIs/Swagger/H2
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
                         "/motos/**","/patios/**",
                         "/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html",
                         "/console/**"
                 ))
 
-                // H2 console
                 .headers(h -> h.frameOptions(f -> f.disable()))
 
-                // Login/Logout
                 .formLogin(login -> login
                         .loginPage("/login").permitAll()
                         .defaultSuccessUrl("/web", true)
                 )
 
-                // 403 -> sua página
                 .exceptionHandling(ex -> ex.accessDeniedHandler((req, res, e) -> res.sendRedirect("/acesso-negado")))
 
                 .logout(l -> l
