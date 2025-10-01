@@ -31,28 +31,22 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Páginas Thymeleaf (/web/**)
-                        .requestMatchers(HttpMethod.GET, "/web/**")
-                        .hasAnyRole("ADMIN","OPERADOR")
-                        // criar/atualizar via form
-                        .requestMatchers(HttpMethod.POST, "/web/**/salvar")
-                        .hasAnyRole("ADMIN","OPERADOR")
+                        .requestMatchers(HttpMethod.GET, "/web/**").hasAnyRole("ADMIN","OPERADOR")
+                        // criar/atualizar via form  -> SOMENTE ADMIN
+                        .requestMatchers(HttpMethod.POST, "/web/**/salvar").hasRole("ADMIN")
                         // excluir via form
-                        .requestMatchers(HttpMethod.POST, "/web/**/excluir", "/web/**/excluir/**")
-                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/web/**/excluir", "/web/**/excluir/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/web/**").hasRole("ADMIN")
                         .requestMatchers("/web/**").hasRole("ADMIN")
 
                         // REST
-                        .requestMatchers(HttpMethod.GET, "/motos/**","/patios/**")
-                        .hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.POST, "/motos/**","/patios/**")
-                        .hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.PUT, "/motos/**","/patios/**")
-                        .hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.DELETE, "/motos/**","/patios/**")
-                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/motos/**","/patios/**").hasAnyRole("ADMIN","OPERADOR")
+                        // -> SOMENTE ADMIN em POST/PUT/DELETE
+                        .requestMatchers(HttpMethod.POST, "/motos/**","/patios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,  "/motos/**","/patios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/motos/**","/patios/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
