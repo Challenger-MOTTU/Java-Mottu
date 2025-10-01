@@ -60,6 +60,21 @@
 
 </div>
 
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="mb-0">Motos</h2>
+
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary"
+           th:href="@{|/web/motos/export?sep=,|}">
+            Exportar CSV
+        </a>
+
+        <a class="btn btn-primary" th:href="@{/web/motos/novo}" sec:authorize="hasRole('ADMIN')">
+            Nova moto
+        </a>
+    </div>
+</div>
+
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
 </body>
 </html>
