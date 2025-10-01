@@ -11,10 +11,14 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import jakarta.persistence.EntityNotFoundException;
+
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MotoService {
@@ -84,5 +88,9 @@ public class MotoService {
             throw new EntityNotFoundException("Moto não encontrada");
         }
         motoRepository.deleteById(id);
+    }
+
+    public List<Moto> listarTodas() {
+        return motoRepository.findAll(Sort.by(Sort.Direction.ASC, "placa"));
     }
 }
