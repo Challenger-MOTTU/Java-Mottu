@@ -7,7 +7,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - **Banco H2 in-memory** com **Flyway** (4 migrações + *seed*).
 - **API REST** documentada por **Swagger/OpenAPI**.
 - **Validações (Jakarta)**, tratamento de erros e **tema escuro** com **Bootswatch Darkly** + CSS customizado.
-- **Fluxo adicional:** **Exportação de Motos para CSV** diretamente da tela de lista (**botões “Exportar CSV”**).
+- **Fluxo adicional:** **Exportação de Motos para XLSX** diretamente da tela de lista (**botão “Exportar XLSX”**).
 
 ---
 
@@ -16,7 +16,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - [Como Rodar](#como-rodar)
 - [Login, Perfis e Autorização](#login-perfis-e-autorização)
 - [Frontend (Thymeleaf)](#frontend-thymeleaf)
-- [Fluxo Adicional — Exportar CSV](#fluxo-adicional--exportar-csv)
+- [Fluxo Adicional — Exportar XLSX](#fluxo-adicional--exportar-xlsx)
 - [Banco de Dados & Flyway](#banco-de-dados--flyway)
 - [API REST & Swagger](#api-rest--swagger)
 - [Tratamento de Erros (REST)](#tratamento-de-erros-rest)
@@ -106,7 +106,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - `templates/home.html` — Boas-vindas e navegação rápida.
 - `templates/login.html` — Tela de login (mensagens de erro/sucesso).
 - `templates/access-denied.html` — 403 (acesso negado).
-- `templates/motos/list.html` — Lista com **badges** por status, ações (condicionais por perfil) e **botões para exportar CSV**.
+- `templates/motos/list.html` — Lista com **badges** por status, ações (condicionais por perfil) e **botão para exportar XLSX**.
 - `templates/motos/form.html` — Form para criar/editar (CSRF + validações).
 - `templates/patios/list.html` — Lista com ações.
 - `templates/patios/form.html` — Form para criar/editar (CSRF + validações).
@@ -123,36 +123,29 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 
 ---
 
-## Fluxo Adicional — Exportar CSV
+## Fluxo Adicional — Exportar XLSX
 
-Permite baixar a lista de motos em **CSV** diretamente da tela **Motos**.
+Permite baixar a lista de motos em **Excel (.xlsx)** diretamente da tela **Motos**.
 
 **Como usar (UI):**
-- Na página **Motos**, clique em **Exportar CSV (,)** ou **Exportar CSV (;)**.
-    - A opção **(,)** gera separação por vírgula (padrão internacional).
-    - A opção **(;)** facilita abrir no **Excel pt-BR** sem precisar alterar configurações regionais.
+- Na página **Motos**, clique em **Exportar XLSX**.
 
 **Endpoint (usado pela UI):**
 ```
-GET /web/motos/export?status=<opcional>&patioId=<opcional>&sep=<opcional>
+GET /web/motos/export.xlsx?status=<opcional>&patioId=<opcional>
 ```
 
 **Parâmetros (opcionais):**
 - `status` — filtra por status (`DISPONIVEL`, `EM_USO`, `EM_MANUTENCAO`, `INATIVA`).
 - `patioId` — filtra por pátio (ID).
-- `sep` — separador do CSV. Padrão `,`. Use `;` para Excel pt-BR.
 
 **Formato do arquivo:**
-- Primeira linha `sep=,` (ou `sep=;`) para o Excel reconhecer o separador.
-- Arquivo em **UTF-8 com BOM** (acentos corretos).
-- Cabeçalho: `Placa,Modelo,Status,Pátio` (usa **nome** do pátio).
-- Campos com vírgula/;/" ou quebra de linha vêm **entre aspas**.
+- Arquivo **.xlsx** (Excel) com as colunas **Placa**, **Modelo**, **Status** e **Pátio**.
 
 **Exemplos rápidos:**
 ```
-/web/motos/export
-/web/motos/export?sep=;
-/web/motos/export?status=EM_USO&patioId=1
+/web/motos/export.xlsx
+/web/motos/export.xlsx?status=EM_USO&patioId=1
 ```
 
 **Segurança:** requer autenticação; disponível para `ADMIN` e `OPERADOR` (mesmo controle de `/web/**`).
@@ -176,7 +169,6 @@ GET /web/motos/export?status=<opcional>&patioId=<opcional>&sep=<opcional>
 **Swagger UI:** `http://localhost:8080/swagger-ui.html`  
 **OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
 
-> Dica: faça **login** em `/login` e, sem fechar a aba, acesse o **Swagger** — ele reutiliza o **cookie de sessão**.
 
 ### Endpoints principais
 
@@ -290,34 +282,6 @@ Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `
 
 ---
 
-## Estrutura de Pastas
-```
-src/
-  main/
-    java/com/motogrid/api/...
-      config/            # SecurityConfig, etc.
-      controller/        # REST controllers
-      dto/               # DTOs + mappers
-      exception/         # Handler global de erros REST
-      model/             # Entidades JPA
-      repository/        # Spring Data JPA
-      service/           # Regras de negócio
-      web/               # Controllers Thymeleaf
-    resources/
-      db/migration/      # Migrações Flyway (V1..V4)
-      static/
-        css/app.css
-        img/motogrid.png
-      templates/
-        fragments/       # head, header, footer
-        motos/           # list, form
-        patios/          # list, form
-        access-denied.html
-        home.html
-        login.html
-```
-
----
 
 ## Roteiro de Testes (passo a passo)
 
@@ -337,10 +301,9 @@ src/
 4. **Motos → Nova moto** vinculando a um pátio existente.
 5. **Editar** e **excluir** uma moto.
 
-### C) Fluxo adicional — Exportar CSV
-1. Em **/web/motos**, clique **Exportar CSV (,)** → abra no Excel: colunas e acentos corretos.
-2. Clique **Exportar CSV (;)** → Excel pt-BR abre sem ajustes regionais.
-3. Teste filtros via URL (ex.: `?status=EM_USO&patioId=1`).
+### C) Fluxo adicional — Exportar XLSX
+1. Em **/web/motos**, clique **Exportar XLSX** → abra no Excel: colunas e acentos corretos.
+2. Teste filtros via URL (ex.: `?status=EM_USO&patioId=1`).
 
 ### D) Validações
 1. Tente salvar **pátio** sem `nome`/`cidade` → mensagens de erro ao lado dos campos.
