@@ -1,0 +1,13 @@
+<!-- templates/fragments/head.html -->
+<head th:fragment="head(title='MotoGrid')" xmlns:th="http://www.thymeleaf.org">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${title}">MotoGrid</title>
+
+    <link rel="icon" th:href="@{/img/motogrid.png}" type="image/png" />
+    <!-- Bootswatch Darkly (Bootstrap 5.3) -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/darkly/bootstrap.min.css" />
+    <!-- Seu CSS -->
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+</head>

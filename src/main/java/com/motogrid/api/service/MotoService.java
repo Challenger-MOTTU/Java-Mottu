@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import jakarta.persistence.EntityNotFoundException;
 @Service
 @RequiredArgsConstructor
 public class MotoService {
@@ -25,6 +25,11 @@ public class MotoService {
     @Cacheable("motos")
     public Page<Moto> listar(Pageable pageable) {
         return motoRepository.findAll(pageable);
+    }
+
+    public Moto buscarPorId(Long id) {
+        return motoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada"));
     }
 
     public Page<Moto> buscarPorPlaca(String placa, Pageable pageable) {

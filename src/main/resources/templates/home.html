@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{fragments/head :: head('MotoGrid')}"></th:block>
+<body>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm p-4">
+            <h1 class="mb-2">Bem-vindo ao MotoGrid</h1>
+            <p class="text-secondary">Use o menu para navegar entre Motos e Pátios.</p>
+            <div class="d-flex gap-2 mt-3">
+                <a class="btn btn-primary" th:href="@{/web/motos}">Ir para Motos</a>
+                <a class="btn btn-outline-secondary" th:href="@{/web/patios}">Ir para Pátios</a>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+</body>
+</html>

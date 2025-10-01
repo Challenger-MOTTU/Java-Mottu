@@ -1,71 +1,155 @@
-# 🚀 MotoGridAPI
+# 🚀 MotoGrid
 
-API REST desenvolvida para o projeto da **1ª Sprint do Challenge FIAP (Java Advanced)**.  
-O sistema permite o **gerenciamento de motos e pátios**, com funcionalidades de CRUD, filtros, paginação, cache, validações e documentação automática via Swagger.
+Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pátios**, com:
 
-✅ Este projeto atende 100% dos requisitos técnicos exigidos pela entrega da Sprint 1.
-
----
-
-## 🎯 Objetivo da API
-
-Oferecer uma solução backend robusta para:
-- Cadastrar, atualizar e listar motos.
-- Relacionar motos a pátios.
-- Filtrar motos por status ou placa.
-- Validar e padronizar erros via DTO e tratamento global.
-- Gerenciar os pátios disponíveis.
-- Exibir documentação interativa via Swagger.
+- **Frontend** em **Thymeleaf** (fragments reutilizáveis: `head`, `header`, `footer`) e páginas de **lista** e **formulário** para Motos e Pátios.
+- **Autenticação e autorização** com **Spring Security** (login por formulário, perfis `ADMIN` e `OPERADOR`, CSRF configurado).
+- **Banco H2 in-memory** com **Flyway** (4 migrações + *seed*).
+- **API REST** documentada por **Swagger/OpenAPI**.
+- **Validações (Jakarta)**, tratamento de erros e **tema escuro** com **Bootswatch Darkly** + CSS customizado.
 
 ---
 
-## 🛠 Tecnologias Utilizadas
-
-- Java 17
-- Spring Boot 3.4.5
-- Spring Web
-- Spring Data JPA
-- H2 Database (in-memory)
-- Bean Validation (Jakarta)
-- Springdoc OpenAPI 2.5.0 (Swagger)
-- Lombok
-- Maven
-
----
-
-## ▶️ Instruções para Executar
-
-### Pré-requisitos:
-- JDK 17 instalado
-- Maven configurado
-- IDE como IntelliJ ou VSCode
-
-### Passos:
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/motogrid-api.git
-   ```
-
-2. Acesse o projeto e execute via sua IDE ou terminal:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-
-3. Acesse os recursos:
-    - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-    - **H2 Console**: [http://localhost:8080/console](http://localhost:8080/console)
-        - JDBC URL: `jdbc:h2:mem:motogrid`
-        - Username: `sa`
-        - Password: (em branco)
+## 📑 Sumário
+- [Arquitetura & Tecnologias](#arquitetura--tecnologias)
+- [Como Rodar](#como-rodar)
+- [Login, Perfis e Autorização](#login-perfis-e-autorização)
+- [Frontend (Thymeleaf)](#frontend-thymeleaf)
+- [Banco de Dados & Flyway](#banco-de-dados--flyway)
+- [API REST & Swagger](#api-rest--swagger)
+- [Tratamento de Erros (REST)](#tratamento-de-erros-rest)
+- [Estrutura de Pastas](#estrutura-de-pastas)
+- [Roteiro de Testes (passo a passo)](#roteiro-de-testes-passo-a-passo)
+- [Troubleshooting](#troubleshooting)
+- [Checklist da Sprint](#checklist-da-sprint)
+- [Autores](#autores)
 
 ---
 
-## 🔗 Endpoints e Exemplos de Body
+## Arquitetura & Tecnologias
+- **Java 17**
+- **Spring Boot 3.2.5** (Web, **Thymeleaf**, Security, Validation)
+- **Spring Data JPA**
+- **H2 Database** (memória)
+- **Flyway 9.22.x**
+- **Springdoc OpenAPI 2.3.x** (Swagger)
+- **Thymeleaf Extras Spring Security 6**
+- **Bootswatch Darkly** + `static/css/app.css`
+- **Maven**
 
-### 📦 `/patios`
+---
 
-#### POST `/patios`
+## Como Rodar
+
+### Pré-requisitos
+- **JDK 17** instalado
+- **Maven** (ou usar o wrapper `mvnw` da raiz do projeto)
+
+### Passos
+1) Clonar o repositório e entrar na pasta do projeto.
+2) Executar a aplicação:
+    - **Linux/Mac:** `./mvnw spring-boot:run`
+    - **Windows:** `mvn spring-boot:run`
+
+### Endereços úteis
+- **Web (Home):** `http://localhost:8080/web`
+- **Login:** `http://localhost:8080/login`
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
+- **H2 Console:** `http://localhost:8080/console`
+    - JDBC URL: `jdbc:h2:mem:motogrid`
+    - User: `sa`
+    - Password: *(em branco)*
+
+---
+
+## Login, Perfis e Autorização
+
+**Usuários (in-memory):**
+
+| Usuário    | Senha | Perfis   |
+|------------|:-----:|----------|
+| `admin`    | `123` | `ADMIN`  |
+| `operador` | `123` | `OPERADOR` |
+
+**Regras de acesso (principais):**
+- **Público (permitAll):** Swagger (`/v3/api-docs/**`, `/swagger-ui.html`, `/swagger-ui/**`), H2 (`/console/**`), estáticos (`/css/**`, `/img/**`), `/error`, `/login`.
+- **Web (Thymeleaf):**
+    - `GET /web/**` → `ADMIN` **ou** `OPERADOR`
+    - Demais ações em `/web/**` (criar/editar/excluir) → **somente `ADMIN`**
+- **REST:**
+    - `GET /motos/**` e `GET /patios/**` → `ADMIN` **ou** `OPERADOR`
+    - `POST/PUT/DELETE` em `/motos/**` e `/patios/**` → **somente `ADMIN`**
+
+**CSRF:** ativo para formulários do **/web/** e **ignorado** para **REST/Swagger/H2**.  
+**Login:** formulário customizado em `/login`, `defaultSuccessUrl("/web", true)`.  
+**Logout:** via **POST** (use o botão **Sair** na navbar). Abrir `/logout` por GET pode mostrar erro — é esperado.  
+**403:** `/acesso-negado`.
+
+---
+
+## Frontend (Thymeleaf)
+
+### Fragments
+- `templates/fragments/head.html`  
+  Inclui `<meta>`, título dinâmico, favicon, **Bootswatch Darkly** e `@{/css/app.css}`.  
+  Uso: `th:replace="~{fragments/head :: head('Título da Página')}"`
+- `templates/fragments/header.html`  
+  Navbar com links **Motos**, **Pátios** e **Sair** (visibilidade com `sec:authorize`).  
+  Uso: `th:replace="~{fragments/header :: header}"`
+- `templates/fragments/footer.html`  
+  Rodapé (`© MotoGrid`) e bundle do Bootstrap.  
+  Uso: `th:replace="~{fragments/footer :: footer}"`
+
+### Páginas
+- `templates/home.html` — Boas-vindas e navegação rápida.
+- `templates/login.html` — Tela de login (mensagens de erro/sucesso).
+- `templates/access-denied.html` — 403 (acesso negado).
+- `templates/motos/list.html` — Lista com **badges** por status e ações (condicionais por perfil).
+- `templates/motos/form.html` — Form para criar/editar (CSRF + validações).
+- `templates/patios/list.html` — Lista com ações.
+- `templates/patios/form.html` — Form para criar/editar (CSRF + validações).
+
+### Estilo (tema escuro)
+- `static/css/app.css` aplica:
+    - Navbar com gradiente e *blur*.
+    - Cards/tabelas/links com cores **Darkly** + overrides.
+    - **Badges**:
+        - `DISPONIVEL` → success
+        - `EM_USO` → primary
+        - `EM_MANUTENCAO` → warning
+        - outros → secondary
+
+---
+
+## Banco de Dados & Flyway
+
+**H2 (memória)** — dados são recriados a cada inicialização.
+
+**Migrações (executadas automaticamente):**
+1. `V1__create_table_patio.sql`
+2. `V2__create_table_moto.sql`
+3. `V3__index_moto_placa.sql`
+4. `V4__seed_base.sql` *(pátios & motos iniciais)*
+
+---
+
+## API REST & Swagger
+
+**Swagger UI:** `http://localhost:8080/swagger-ui.html`  
+**OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
+
+> Dica: faça **login** em `/login` e, sem fechar a aba, acesse o **Swagger** — ele reutiliza o **cookie de sessão**.
+
+### Endpoints principais
+
+**Pátios**
+- `GET /patios` — lista (paginável)
+- `GET /patios/{id}`
+- `POST /patios` — **ADMIN**
+- `PUT /patios/{id}` — **ADMIN**
+- `DELETE /patios/{id}` — **ADMIN**
+
+Exemplo `POST /patios`:
 ```json
 {
   "nome": "Pátio Zona Norte",
@@ -74,7 +158,7 @@ Oferecer uma solução backend robusta para:
 }
 ```
 
-#### PUT `/patios/{id}`
+Exemplo `PUT /patios/{id}`:
 ```json
 {
   "id": 1,
@@ -84,25 +168,28 @@ Oferecer uma solução backend robusta para:
 }
 ```
 
----
+**Motos**
+- `GET /motos` — lista (paginável)
+- `GET /motos/{id}`
+- `POST /motos` — **ADMIN**
+- `PUT /motos/{id}` — **ADMIN**
+- `DELETE /motos/{id}` — **ADMIN**
 
-### 🛵 `/motos`
-
-#### POST `/motos`
+Exemplo `POST /motos`:
 ```json
 {
-  "placa": "ABC1234",
+  "placa": "ABC1D23",
   "modelo": "Honda Biz",
   "status": "DISPONIVEL",
   "patioId": 1
 }
 ```
 
-#### PUT `/motos/{id}`
+Exemplo `PUT /motos/{id}`:
 ```json
 {
   "id": 1,
-  "placa": "XYZ5678",
+  "placa": "XYZ5A67",
   "modelo": "Yamaha Factor",
   "status": "EM_MANUTENCAO",
   "patioId": 1
@@ -111,11 +198,11 @@ Oferecer uma solução backend robusta para:
 
 ---
 
-## ❌ Tratamento de Erros
+## Tratamento de Erros (REST)
 
-A API possui um mecanismo centralizado de tratamento de exceções, retornando respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`.
+Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`.
 
-### 🔸 Erro de Validação (HTTP 422)
+**422 – Validação**
 ```json
 {
   "status": 422,
@@ -127,7 +214,7 @@ A API possui um mecanismo centralizado de tratamento de exceções, retornando r
 }
 ```
 
-### 🔸 Entidade Não Encontrada (HTTP 404)
+**404 – Não encontrado**
 ```json
 {
   "status": 404,
@@ -136,7 +223,7 @@ A API possui um mecanismo centralizado de tratamento de exceções, retornando r
 }
 ```
 
-### 🔸 Status Inválido no Filtro (HTTP 400)
+**400 – Status inválido no filtro**
 ```json
 {
   "status": 400,
@@ -145,7 +232,7 @@ A API possui um mecanismo centralizado de tratamento de exceções, retornando r
 }
 ```
 
-### 🔸 ID do PUT divergente (HTTP 400)
+**400 – ID divergente (PUT)**
 ```json
 {
   "status": 400,
@@ -154,7 +241,7 @@ A API possui um mecanismo centralizado de tratamento de exceções, retornando r
 }
 ```
 
-### 🔸 Erro Genérico (HTTP 500)
+**500 – Erro genérico**
 ```json
 {
   "status": 500,
@@ -165,20 +252,67 @@ A API possui um mecanismo centralizado de tratamento de exceções, retornando r
 
 ---
 
-## 👥 Alunos Participantes
 
-- Gabriel Gomes Mancera (RM: 555427)
-- Victor Hugo Carvalho (RM: 558550)
-- Juliana de Andrade Sousa (RM: 558834)
+## Roteiro de Testes (passo a passo)
+
+### A) Autenticação & Autorização
+1. Acesse `/login`:
+    - Entre como **admin/123** → redireciona para `/web`.
+    - Entre como **operador/123** → redireciona para `/web`.
+2. Navbar: abra **Motos** e **Pátios** com ambos os perfis – **ambos** podem visualizar.
+3. Com **operador**, confirme que **não** há botões de **criar/editar/excluir** (aparece “Somente leitura”).
+4. Com **admin**, confirme que **criar/editar/excluir** funcionam.
+5. Clique em **Sair** (navbar) → sessão encerrada (logout **POST**).
+
+### B) CRUD Web (Thymeleaf)
+1. **Pátios → Novo pátio**: criar, voltar à lista e conferir registro.
+2. **Editar pátio** e confirmar persistência.
+3. **Excluir pátio** (com `admin`).
+4. **Motos → Nova moto** vinculando a um pátio existente.
+5. **Editar** e **excluir** uma moto.
+
+### C) Validações
+1. Tente salvar **pátio** sem `nome`/`cidade` → mensagens de erro ao lado dos campos.
+2. Tente salvar **moto** sem `placa`/`modelo` ou sem `patioId` → mensagens de erro.
+3. Se houver regra de placa, teste formato inválido → deve rejeitar.
+
+### D) API REST (Swagger)
+1. Logado, abra `/swagger-ui.html`.
+2. Execute `GET /patios` e `GET /motos` → deve listar seed + registros criados.
+3. Com **ADMIN**, teste `POST/PUT/DELETE` para ambos recursos.
+4. Com **OPERADOR**, `POST/PUT/DELETE` devem falhar com **403** (ou 401, conforme o caso).
+
+### E) H2 & Migrações
+1. Acesse `/console` e conecte (`jdbc:h2:mem:motogrid`).
+2. Verifique as tabelas (`PATIO`, `MOTO`) e a tabela do **Flyway**.
+3. Confira dados de **seed** (V4).
 
 ---
 
-## ✅ Funcionalidades Extras
+## Troubleshooting
 
-- 🔍 Filtros dinâmicos por `placa` e `status` da moto
-- 📃 Paginação com suporte ao `Pageable`
-- 💾 Cache para otimização no endpoint de listagem de motos
-- ⚠️ Tratamento global e centralizado de exceções
-- 🔄 Uso de DTOs para encapsulamento de dados
-- 🛑 Validação de enums com mensagem 400 personalizada
-- 🔐 Validação de consistência entre ID da URL e do corpo no PUT
+- **“Port 8080 was already in use”**  
+  Algum processo ocupa a porta. Soluções:
+    - Finalize o processo na 8080 **ou**
+    - Altere a porta em `src/main/resources/application.properties`:
+      ```
+      server.port=8081
+      ```
+
+- **Logout abrindo `/logout` na URL dá erro**  
+  O logout é **POST** com CSRF. Use o botão **Sair** na navbar.
+
+- **CSS/Imagens não carregam**
+    - `head.html` referencia `@{/css/app.css}` e o arquivo existe em `static/css/app.css`.
+    - Favicon/logo: `@{/img/motogrid.png}` existe em `static/img/motogrid.png`.
+    - Evite sobrescrever CDNs: o projeto usa **Bootswatch Darkly** e `app.css`.
+
+- **Swagger “sem sessão”**  
+  Faça **login** antes em `/login` e reabra o **Swagger** na **mesma aba**.
+
+---
+
+## Autores
+- **Gabriel Gomes Mancera** (RM: 555427)
+- **Victor Hugo Carvalho** (RM: 558550)
+- **Juliana de Andrade Sousa** (RM: 558834)
