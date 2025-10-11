@@ -22,4 +22,11 @@ public class Moto {
     @ManyToOne
     @JoinColumn(name = "patio_id")
     private Patio patio;
+
+    public void atualizarDados(Moto novosDados, Patio novoPatio) {
+        this.setModelo(novosDados.getModelo());
+        this.setPlaca(novosDados.getPlaca());
+        this.setStatus(novosDados.getStatus());
+        this.setPatio(novoPatio);
+    }
 }

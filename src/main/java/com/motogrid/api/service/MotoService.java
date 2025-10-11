@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
@@ -69,15 +68,15 @@ public class MotoService {
         Moto existente = motoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada"));
 
-        existente.setModelo(moto.getModelo());
-        existente.setPlaca(moto.getPlaca());
-        existente.setStatus(moto.getStatus());
-
+        Patio novoPatio = null;
         if (moto.getPatio() != null && moto.getPatio().getId() != null) {
-            Patio patio = patioRepository.findById(moto.getPatio().getId())
+            novoPatio = patioRepository.findById(moto.getPatio().getId())
                     .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
-            existente.setPatio(patio);
+        } else {
+            novoPatio = existente.getPatio();
         }
+
+        existente.atualizarDados(moto, novoPatio);
 
         return motoRepository.save(existente);
     }
