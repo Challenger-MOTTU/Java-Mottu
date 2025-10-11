@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+/* --- Variáveis de Cor (Base Original) --- */
 :root{
     --bg:#0f172a;          /* slate-900 */
     --muted:#94a3b8;       /* slate-400 */
@@ -8,7 +9,21 @@
     --brand2:#22d3ee;      /* cyan-400 */
     --card:#111827;        /* gray-900 */
     --border:rgba(255,255,255,.08);
+    --shadow:rgba(0,0,0,.25);
 }
+
+/* --- Animação de Fade-In Suave --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 
 html,body{height:100%}
 body{
@@ -20,18 +35,46 @@ body{
     font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
-.navbar{
-    background: linear-gradient(90deg, rgba(13,110,253,.85), rgba(32,201,151,.85));
-    border-bottom:1px solid rgba(255,255,255,.08);
-    backdrop-filter:blur(8px);
+/* --- Estilos Gerais com Transições --- */
+a, .nav-link, .btn {
+    transition: all 0.3s ease; /* Transição suave para todos os elementos interativos */
 }
 
+a, .nav-link{color:var(--fg)}
+a:hover, .nav-link:hover{
+    color:#fff;
+    transform: translateY(-1px); /* Leve elevação no hover */
+}
+
+/* --- Navbar Aprimorada (Glassmorphism + Cores Consistentes) --- */
+.navbar{
+    /* Usando as variáveis de cor da marca para consistência */
+    background: linear-gradient(90deg, var(--brand), var(--brand2));
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(10px); /* Aumentei um pouco o blur para mais destaque */
+    -webkit-backdrop-filter:blur(10px);
+}
+
+.navbar-brand .brand-logo{ height:28px; width:auto; border-radius:4px; }
+.navbar .nav-link.active{ font-weight:600; color:#fff; }
+
+/* --- Card com Profundidade e Animação --- */
 .card{
     background-color:var(--card);
     border:1px solid var(--border);
     border-radius:1rem;
+    box-shadow: 0 8px 32px 0 var(--shadow); /* Sombra para dar profundidade */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transição para o hover */
+    animation: fadeInUp 0.5s ease-out forwards; /* Animação de entrada */
 }
 
+.card:hover {
+    transform: translateY(-5px); /* Efeito de elevação no hover */
+    box-shadow: 0 12px 40px 0 var(--shadow);
+}
+
+
+/* --- Tabela com Hover Suave --- */
 .table{color:var(--fg)}
 .table thead th{
     border-color:var(--border);
@@ -40,38 +83,73 @@ body{
     font-size:.80rem;
     letter-spacing:.04em;
 }
-.table-hover tbody tr:hover{background:rgba(255,255,255,.03)}
-.table tbody tr{border-color:var(--border)}
+
+.table tbody tr{
+    border-color:var(--border);
+    transition: background-color 0.25s ease; /* Transição suave no hover da linha */
+}
+
+.table-hover tbody tr:hover{
+    background:rgba(255,255,255,.04);
+}
+
+
+/* --- Botões com Micro-interações e Sombra --- */
+.btn {
+    box-shadow: 0 4px 15px 0 rgba(0,0,0,.15); /* Sombra padrão para botões */
+}
 
 .btn-primary{
     background-image:linear-gradient(135deg, var(--brand), var(--brand2));
     border:0;
+    box-shadow: 0 4px 20px 0 rgba(99, 102, 241, 0.3); /* Sombra colorida para destaque */
 }
-.btn-outline-secondary{border-color:var(--border); color:var(--fg)}
-.btn-outline-secondary:hover{background:rgba(255,255,255,.05); color:var(--fg); border-color:var(--fg)}
 
+.btn-outline-secondary{
+    border-color:var(--border);
+    color:var(--fg);
+}
+
+.btn:hover{
+    transform: translateY(-2px); /* Efeito de "levantar" no hover */
+    box-shadow: 0 6px 20px 0 var(--shadow); /* Sombra mais forte no hover */
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 25px 0 rgba(99, 102, 241, 0.4);
+}
+
+.btn-outline-secondary:hover{
+    background:rgba(255,255,255,.05);
+    color:var(--fg);
+    border-color:var(--fg);
+}
+
+/* --- Acessibilidade: Estilo de Foco Visível --- */
+.btn:focus-visible, a:focus-visible {
+    outline: 2px solid var(--brand2);
+    outline-offset: 2px;
+}
+
+
+/* --- Badges (Estilo Original Mantido) --- */
 .badge{border-radius:.5rem; padding:.5em .6em; font-weight:600}
 .badge-success{background:rgba(16,185,129,.2); color:#34d399}
 .badge-primary{background:rgba(59,130,246,.18); color:#93c5fd}
 .badge-warning{background:rgba(245,158,11,.2); color:#fbbf24}
 .badge-secondary{background:rgba(148,163,184,.2); color:#cbd5e1}
 
-.navbar-brand .brand-logo{ height:28px; width:auto; border-radius:4px; }
-.navbar .nav-link.active{ font-weight:600; color:#fff; }
-.navbar .btn-outline-light.btn-sm{ border-color:rgba(255,255,255,.55); }
-.navbar .btn-outline-light.btn-sm:hover{ border-color:#fff; }
 
-
-a, .nav-link{color:var(--fg)}
-a:hover, .nav-link:hover{color:#fff}
-
+/* --- Estilos específicos da Navbar (Botão) --- */
 .navbar .btn-outline-light.btn-sm{
     color:#fff;
     border-color:rgba(255,255,255,.95);
     background:rgba(0,0,0,.18);
+    box-shadow: none; /* Remove a sombra padrão para botões dentro da navbar */
 }
 
 .navbar .btn-outline-light.btn-sm:hover{
     background:rgba(255,255,255,.18);
     border-color:#fff;
+    box-shadow: none;
 }
