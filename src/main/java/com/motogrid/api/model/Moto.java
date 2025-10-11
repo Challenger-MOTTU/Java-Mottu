@@ -1,10 +1,16 @@
 package com.motogrid.api.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
+@ToString(of = {"id", "placa", "status"})
 public class Moto {
 
     @Id
