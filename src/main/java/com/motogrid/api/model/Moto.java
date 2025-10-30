@@ -1,10 +1,16 @@
 package com.motogrid.api.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
+@ToString(of = {"id", "placa", "status"})
 public class Moto {
 
     @Id
@@ -22,4 +28,11 @@ public class Moto {
     @ManyToOne
     @JoinColumn(name = "patio_id")
     private Patio patio;
+
+    public void atualizarDados(Moto novosDados, Patio novoPatio) {
+        this.setModelo(novosDados.getModelo());
+        this.setPlaca(novosDados.getPlaca());
+        this.setStatus(novosDados.getStatus());
+        this.setPatio(novoPatio);
+    }
 }

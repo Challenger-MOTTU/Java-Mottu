@@ -38,6 +38,11 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.10.0</version>
 		</dependency>
+        <!-- pom.xml -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>org.apache.poi</groupId>

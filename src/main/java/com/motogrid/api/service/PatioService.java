@@ -32,10 +32,8 @@ public class PatioService {
     public Patio atualizar(Long id, Patio patio) {
         Patio existente = patioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pátio não encontrado"));
+        existente.atualizarDados(patio);
 
-        existente.setNome(patio.getNome());
-        existente.setCidade(patio.getCidade());
-        existente.setCapacidade(patio.getCapacidade());
         return patioRepository.save(existente);
     }
 
