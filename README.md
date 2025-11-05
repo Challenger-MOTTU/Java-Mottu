@@ -22,6 +22,7 @@ Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pá
 - [Tratamento de Erros (REST)](#tratamento-de-erros-rest)
 - [Estrutura de Pastas](#estrutura-de-pastas)
 - [Roteiro de Testes (passo a passo)](#roteiro-de-testes-passo-a-passo)
+- [🌐 Deploy (Render)](#-deploy-render)
 - [Troubleshooting](#troubleshooting)
 - [Checklist da Sprint](#checklist-da-sprint)
 - [Autores](#autores)
@@ -282,6 +283,34 @@ Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `
 
 ---
 
+## Estrutura de Pastas
+
+```
+src
+├── main
+│   ├── java
+│   │   └── br.com.fiap.motogrid
+│   │       ├── controller
+│   │       ├── dto
+│   │       ├── exception
+│   │       ├── model
+│   │       ├── repository
+│   │       ├── security
+│   │       └── service
+│   └── resources
+│       ├── db/migration           # V1...V4 (Flyway)
+│       ├── static/css/app.css
+│       └── templates
+│           ├── fragments/{head,header,footer}.html
+│           ├── home.html
+│           ├── login.html
+│           ├── access-denied.html
+│           ├── motos/{list,form}.html
+│           └── patios/{list,form}.html
+└── test
+```
+
+---
 
 ## Roteiro de Testes (passo a passo)
 
@@ -323,6 +352,53 @@ Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `
 
 ---
 
+## 🌐 Deploy (Render)
+
+Aplicação publicada em: **https://java-mottu.onrender.com**
+
+**Rotas úteis no deploy:**
+- **Home Web:** `https://java-mottu.onrender.com/web`
+- **Login:** `https://java-mottu.onrender.com/login`
+- **Swagger UI:** `https://java-mottu.onrender.com/swagger-ui.html`
+- **H2 Console:** `https://java-mottu.onrender.com/console` *(se habilitado)*  
+  - JDBC URL: `jdbc:h2:mem:motogrid`  
+  - User: `sa` — Password: *(vazio)*
+
+**Credenciais de teste (iguais ao local):**
+- `admin` / `123`
+- `operador` / `123`
+
+> ℹ️ **Observações do ambiente Render**
+> - O banco **H2 em memória** é recriado a cada reinício do serviço (cold start/deploy). As migrações **Flyway** restauram o *seed* automaticamente.
+> - O primeiro acesso após período de inatividade pode demorar alguns segundos enquanto o serviço aquece.
+> - Para ações protegidas por CSRF no **/web/**, utilize os formulários da própria UI (links diretos de `POST` podem ser bloqueados).
+
+---
+
+## Troubleshooting
+
+- **“H2 Console não abre”:** confirme se `/console/**` está liberado na `SecurityFilterChain` e se a propriedade `spring.h2.console.enabled=true` está ativa.
+- **Erro 403 no botão “Sair”:** logout é **POST** (CSRF). Use o botão da navbar; abrir `/logout` por GET pode retornar erro — comportamento esperado.
+- **Erro de chave única (placa):** confira o índice único em `MOTO(PLACA)` (Flyway V3) e evite duplicidade.
+- **Swagger 404 em produção:** acesse `/swagger-ui.html` (não apenas `/swagger-ui/`). Confirme a lista de `permitAll()` para `/v3/api-docs/**` e `/swagger-ui/**`.
+- **Exportar XLSX baixa arquivo vazio:** verifique filtros `status/patioId` na URL e se há dados após o *seed*.
+
+---
+
+## Checklist da Sprint
+
+- [x] CRUD completo de **Pátios** (Web + REST)
+- [x] CRUD completo de **Motos** (Web + REST)
+- [x] **Thymeleaf** com fragments (`head`, `header`, `footer`)
+- [x] **Validações** (Jakarta) no Web + REST
+- [x] **Tema escuro** (Bootswatch Darkly + CSS)
+- [x] **Autenticação** e **autorização** (ADMIN/OPERADOR)
+- [x] **Swagger/OpenAPI** disponível
+- [x] **Flyway** com 4 migrações + *seed*
+- [x] **Exportação XLSX** a partir da lista de Motos
+- [x] **Deploy no Render** com acesso público
+
+---
 
 ## Autores
 - **Gabriel Gomes Mancera** (RM: 555427)
