@@ -22,19 +22,26 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/v3/api-docs/**","/swagger-ui.html","/swagger-ui/**",
-                                "/console/**","/error",
-                                "/css/**","/img/**","/webjars/**",
+                                "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
+                                "/console/**", "/error",
+                                "/css/**", "/img/**", "/webjars/**",
                                 "/favicon.ico",
-                                "/login"
+                                "/login",
+                                // Evidências/consultas da Sprint
+                                "/api/mongo/**",
+                                "/api/oracle/**",
+                                "/actuator/health", "/actuator/info"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/web/**").hasAnyRole("ADMIN","OPERADOR")
+
+                        .requestMatchers(HttpMethod.GET, "/web/**").hasAnyRole("ADMIN", "OPERADOR")
+
                         .requestMatchers(HttpMethod.POST,
                                 "/web/motos/salvar",
                                 "/web/motos/{id}/salvar",
                                 "/web/patios/salvar",
                                 "/web/patios/{id}/salvar"
                         ).hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.POST,
                                 "/web/motos/excluir",
                                 "/web/motos/excluir/{id}",
@@ -48,32 +55,30 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/web/**").hasRole("ADMIN")
                         .requestMatchers("/web/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/motos/**","/patios/**").hasAnyRole("ADMIN","OPERADOR")
-                        .requestMatchers(HttpMethod.POST, "/motos/**","/patios/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,  "/motos/**","/patios/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/motos/**","/patios/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/motos/**", "/patios/**").hasAnyRole("ADMIN", "OPERADOR")
+                        .requestMatchers(HttpMethod.POST, "/motos/**", "/patios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/motos/**", "/patios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/motos/**", "/patios/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        "/motos/**","/patios/**",
-                        "/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html",
-                        "/console/**"
+                        "/motos/**", "/patios/**",
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+                        "/console/**",
+                        // Ignora CSRF para APIs REST (Mongo/Oracle)
+                        "/api/**",
+                        "/actuator/**"
                 ))
-
-                .headers(h -> h.frameOptions(f -> f.disable()))
-
+                // Console H2
+                .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .formLogin(login -> login
                         .loginPage("/login").permitAll()
                         .defaultSuccessUrl("/web", true)
                 )
-
                 .exceptionHandling(ex -> ex.accessDeniedHandler((req, res, e) -> res.sendRedirect("/acesso-negado")))
-
-                .logout(l -> l
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout").permitAll()
-                );
+                .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/login?logout").permitAll());
 
         return http.build();
     }
