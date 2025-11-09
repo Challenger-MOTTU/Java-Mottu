@@ -26,7 +26,10 @@ public class SecurityConfig {
                                 "/console/**","/error",
                                 "/css/**","/img/**","/webjars/**",
                                 "/favicon.ico",
-                                "/login"
+                                "/login",
+                                // ---- NOVO: evidências/consultas do Mongo + actuator (health/info)
+                                "/api/mongo/**",
+                                "/actuator/health","/actuator/info"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/web/**").hasAnyRole("ADMIN","OPERADOR")
                         .requestMatchers(HttpMethod.POST,
@@ -43,7 +46,6 @@ public class SecurityConfig {
                                 "/web/patios/excluir/{id}",
                                 "/web/patios/{id}/excluir"
                         ).hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.PUT, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/web/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/web/**").hasRole("ADMIN")
@@ -52,28 +54,24 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/motos/**","/patios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,  "/motos/**","/patios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/motos/**","/patios/**").hasRole("ADMIN")
-
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
                         "/motos/**","/patios/**",
                         "/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html",
-                        "/console/**"
+                        "/console/**",
+                        // ---- NOVO: ignorar CSRF para APIs REST (inclui /api/mongo/**)
+                        "/api/**",
+                        "/actuator/**"
                 ))
-
-                .headers(h -> h.frameOptions(f -> f.disable()))
-
+                // Console H2
+                .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .formLogin(login -> login
                         .loginPage("/login").permitAll()
                         .defaultSuccessUrl("/web", true)
                 )
-
                 .exceptionHandling(ex -> ex.accessDeniedHandler((req, res, e) -> res.sendRedirect("/acesso-negado")))
-
-                .logout(l -> l
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout").permitAll()
-                );
+                .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/login?logout").permitAll());
 
         return http.build();
     }
