@@ -1,212 +1,169 @@
-# 🚀 MotoGrid
+# 🚀 MotoGrid — Web + API (Spring Boot)
 
-Aplicação web + API em **Spring Boot 3.2.5** para gestão de **Motos** e **Pátios**, com:
+Aplicação web + API para gestão de **Motos** e **Pátios** construída com **Spring Boot 3.2.5**.  
+Esta versão consolida a **4ª Sprint (Java Advanced + DB Relacional/Não‑Relacional)** com integrações Oracle e MongoDB, exportações e evidências para avaliação.
 
-- **Frontend** em **Thymeleaf** (fragments reutilizáveis: `head`, `header`, `footer`) e páginas de **lista** e **formulário** para Motos e Pátios.
-- **Autenticação e autorização** com **Spring Security** (login por formulário, perfis `ADMIN` e `OPERADOR`, CSRF configurado).
-- **Banco H2 in-memory** com **Flyway** (4 migrações + *seed*).
-- **API REST** documentada por **Swagger/OpenAPI**.
-- **Validações (Jakarta)**, tratamento de erros e **tema escuro** com **Bootswatch Darkly** + CSS customizado.
-- **Fluxo adicional:** **Exportação de Motos para XLSX** diretamente da tela de lista (**botão “Exportar XLSX”**).
+> **Deploy:** https://java-mottu.onrender.com  
+> **Swagger UI:** https://java-mottu.onrender.com/swagger-ui.html  
+> **Home Web:** https://java-mottu.onrender.com/web  
+> **Login:** https://java-mottu.onrender.com/login
 
 ---
 
-## 📑 Sumário
+## 📌 Sumário
 - [Arquitetura & Tecnologias](#arquitetura--tecnologias)
-- [Como Rodar](#como-rodar)
-- [Login, Perfis e Autorização](#login-perfis-e-autorização)
+- [Narrativa da Solução (o porquê das escolhas)](#narrativa-da-solução-o-porquê-das-escolhas)
+- [Como Rodar Localmente](#como-rodar-localmente)
+- [Perfis, Login e Autorização](#perfis-login-e-autorização)
 - [Frontend (Thymeleaf)](#frontend-thymeleaf)
-- [Fluxo Adicional — Exportar XLSX](#fluxo-adicional--exportar-xlsx)
-- [Banco de Dados & Flyway](#banco-de-dados--flyway)
+- [Relatórios (Export XLSX/CSV)](#relatórios-export-xlsxcsv)
+- [Banco de Dados & Migrações](#banco-de-dados--migrações)
 - [API REST & Swagger](#api-rest--swagger)
-- [Tratamento de Erros (REST)](#tratamento-de-erros-rest)
-- [Estrutura de Pastas](#estrutura-de-pastas)
-- [Roteiro de Testes (passo a passo)](#roteiro-de-testes-passo-a-passo)
+- [Tratamento de Erros (PADRÃO)](#tratamento-de-erros-padrão)
+- [Integrações Oracle & MongoDB](#integrações-oracle--mongodb)
+    - [Oracle (função, procedure e DBMS_OUTPUT)](#oracle-função-procedure-e-dbms_output)
+    - [MongoDB (import, índices e agregações)](#mongodb-import-índices-e-agregações)
+- [Evidências da 4ª Sprint](#evidências-da-4ª-sprint)
+- [Roteiro de Testes (sugestão para o vídeo)](#roteiro-de-testes-sugestão-para-o-vídeo)
 - [🌐 Deploy (Render)](#-deploy-render)
 - [Troubleshooting](#troubleshooting)
-- [Checklist da Sprint](#checklist-da-sprint)
+- [Checklist de Entrega (rubrica do professor)](#checklist-de-entrega-rubrica-do-professor)
+- [Estrutura de Pastas](#estrutura-de-pastas)
 - [Autores](#autores)
 
 ---
 
-## Arquitetura & Tecnologias
-- **Java 17**
-- **Spring Boot 3.2.5** (Web, **Thymeleaf**, Security, Validation)
-- **Spring Data JPA**
-- **H2 Database** (memória)
-- **Flyway 9.22.x**
-- **Springdoc OpenAPI 2.3.x** (Swagger)
-- **Thymeleaf Extras Spring Security 6**
-- **Bootswatch Darkly** + `static/css/app.css`
-- **Maven**
+## 🧱 Arquitetura & Tecnologias
+
+- **Java 17**, **Maven**
+- **Spring Boot 3.2.5**
+    - Web, **Thymeleaf**, Security, Validation
+    - Spring Data **JPA** (H2 / Oracle)
+    - Spring Data **MongoDB**
+    - Cache com `@EnableCaching`
+- **Banco Relacional (H2)** em memória (dev) / arquivo (prod)
+- **Flyway** (migrations V1..V4 + seed)
+- **OpenAPI/Swagger** (springdoc)
+- **UI**: Bootswatch **Darkly** + CSS custom (`static/css/app.css`)
+- **Relatórios**: **Apache POI** (XLSX) + CSV “Excel‑friendly” (BOM + `sep=`)
+- **Oracle**  via `JdbcTemplate`
+- **MongoDB** para analytics (documentos + agregações)
 
 ---
 
-## Como Rodar
+## 🧠 Narrativa da Solução (o porquê das escolhas)
 
-### Pré-requisitos
-- **JDK 17** instalado
-- **Maven** (ou usar o wrapper `mvnw` da raiz do projeto)
+- **H2** como banco primário em **dev** por simplicidade e velocidade. Em **prod**, H2 em **arquivo** (`AUTO_SERVER=TRUE`) garante persistência durante *cold starts* do Render.
+- **Flyway** controla o versionamento do schema e a carga de dados **seed**, permitindo reprodutibilidade do ambiente de correção.
+- **Security**: perfis `ADMIN` e `OPERADOR`. CSRF **ativo** apenas no fluxo **Web** (formularios), **ignorado** no REST/Swagger/H2 para facilitar testes.
+- **DTO + Mapper**: isolamento entre entidade e transporte, facilitando validação e evolução.
+- **Exportações**: XLSX (com cabeçalho estilizado, *freeze* e *autofilter*) e CSV compatível com Excel.
+- **Oracle**: encapsulado em `OracleProcService` com criação condicional do `JdbcTemplate` **apenas** se houver `oracle.datasource.url`, evitando travas de ambiente.
+- **MongoDB**: armazena **motos** e suas **movimentações** para consultas analíticas (somatórios por pátio/tipo, totalizações e amostras), mantendo o relacional simples para o CRUD transacional.
+- **Deploy Render**: variáveis de ambiente habilitam Oracle/Mongo sem alterar código; rotas públicas para avaliação.
+
+---
+
+## 🖥️ Como Rodar Localmente
+
+### Pré‑requisitos
+- **JDK 17**
+- **Maven** (ou usar o wrapper `mvnw`)
 
 ### Passos
-1) Clonar o repositório e entrar na pasta do projeto.
-2) Executar a aplicação:
-    - **Linux/Mac:** `./mvnw spring-boot:run`
-    - **Windows:** `mvn spring-boot:run`
+```bash
+# clonar e entrar
+git clone <repo-url>
+cd <repo>
 
-### Endereços úteis
-- **Web (Home):** `http://localhost:8080/web`
-- **Login:** `http://localhost:8080/login`
-- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
-- **H2 Console:** `http://localhost:8080/console`
-    - JDBC URL: `jdbc:h2:mem:motogrid`
-    - User: `sa`
-    - Password: *(em branco)*
+# rodar
+./mvnw spring-boot:run   # Mac/Linux
+mvn spring-boot:run      # Windows
+```
+
+### Endpoints úteis (local)
+- Web: `http://localhost:8080/web`
+- Login: `http://localhost:8080/login`
+- Swagger: `http://localhost:8080/swagger-ui.html`
+- H2 Console: `http://localhost:8080/console`
+    - JDBC URL: `jdbc:h2:mem:motogrid` | User: `sa` | Password: *(vazio)*
+
+**Arquivos de configuração** (principais):
+- `src/main/resources/application.properties` (dev padrão, H2 memória + Mongo local)
+- `src/main/resources/application-oracle.properties` (Oracle como **banco principal** — use para rodar com Oracle)
+- `src/main/resources/application-prod.properties` (deploy Render: H2 arquivo + variáveis de ambiente)
 
 ---
 
-## Login, Perfis e Autorização
+## 🔐 Perfis, Login e Autorização
 
-**Usuários (in-memory):**
-
-| Usuário    | Senha | Perfis   |
-|------------|:-----:|----------|
-| `admin`    | `123` | `ADMIN`  |
+| Usuário    | Senha | Perfis     |
+|------------|:-----:|------------|
+| `admin`    | `123` | `ADMIN`    |
 | `operador` | `123` | `OPERADOR` |
 
-**Regras de acesso (principais):**
-- **Público (permitAll):** Swagger (`/v3/api-docs/**`, `/swagger-ui.html`, `/swagger-ui/**`), H2 (`/console/**`), estáticos (`/css/**`, `/img/**`), `/error`, `/login`.
-- **Web (Thymeleaf):**
+- Público (`permitAll`): `/v3/api-docs/**`, `/swagger-ui.html`, `/swagger-ui/**`, `/console/**`, `/css/**`, `/img/**`, `/error`, `/login`, `/actuator/health`, `/actuator/info`.
+- **Web (Thymeleaf)**:
     - `GET /web/**` → `ADMIN` **ou** `OPERADOR`
-    - Demais ações em `/web/**` (criar/editar/excluir) → **somente `ADMIN`**
-- **REST:**
-    - `GET /motos/**` e `GET /patios/**` → `ADMIN` **ou** `OPERADOR`
-    - `POST/PUT/DELETE` em `/motos/**` e `/patios/**` → **somente `ADMIN`**
-
-**CSRF:** ativo para formulários do **/web/** e **ignorado** para **REST/Swagger/H2**.  
-**Login:** formulário customizado em `/login`, `defaultSuccessUrl("/web", true)`.  
-**Logout:** via **POST** (use o botão **Sair** na navbar). Abrir `/logout` por GET pode mostrar erro — é esperado.  
-**403:** `/acesso-negado`.
+    - `POST/PUT/PATCH/DELETE /web/**` → **ADMIN**
+- **REST (CRUD)**:
+    - `GET /motos/**`, `GET /patios/**` → `ADMIN` **ou** `OPERADOR`
+    - Modificações (`POST/PUT/DELETE`) → **ADMIN**
+- **CSRF**: ativo no Web; **ignorado** para REST/Swagger/H2/actuator.
 
 ---
 
-## Frontend (Thymeleaf)
+## 🎨 Frontend (Thymeleaf)
 
-### Fragments
-- `templates/fragments/head.html`  
-  Inclui `<meta>`, título dinâmico, favicon, **Bootswatch Darkly** e `@{/css/app.css}`.  
-  Uso: `th:replace="~{fragments/head :: head('Título da Página')}"`
-- `templates/fragments/header.html`  
-  Navbar com links **Motos**, **Pátios** e **Sair** (visibilidade com `sec:authorize`).  
-  Uso: `th:replace="~{fragments/header :: header}"`
-- `templates/fragments/footer.html`  
-  Rodapé (`© MotoGrid`) e bundle do Bootstrap.  
-  Uso: `th:replace="~{fragments/footer :: footer}"`
-
-### Páginas
-- `templates/home.html` — Boas-vindas e navegação rápida.
-- `templates/login.html` — Tela de login (mensagens de erro/sucesso).
-- `templates/access-denied.html` — 403 (acesso negado).
-- `templates/motos/list.html` — Lista com **badges** por status, ações (condicionais por perfil) e **botão para exportar XLSX**.
-- `templates/motos/form.html` — Form para criar/editar (CSRF + validações).
-- `templates/patios/list.html` — Lista com ações.
-- `templates/patios/form.html` — Form para criar/editar (CSRF + validações).
-
-### Estilo (tema escuro)
-- `static/css/app.css` aplica:
-    - Navbar com gradiente e *blur*.
-    - Cards/tabelas/links com cores **Darkly** + overrides.
-    - **Badges**:
-        - `DISPONIVEL` → success
-        - `EM_USO` → primary
-        - `EM_MANUTENCAO` → warning
-        - outros → secondary
+**Fragments**: `fragments/head`, `fragments/header`, `fragments/footer`  
+**Páginas**: `home`, `login`, `access-denied`, `motos/{list,form}`, `patios/{list,form}`  
+**Tema**: Bootswatch **Darkly** + ajustes em `static/css/app.css`  
+Badges de status: `DISPONIVEL` (success), `EM_USO` (primary), `EM_MANUTENCAO` (warning), outros (secondary).
 
 ---
 
-## Fluxo Adicional — Exportar XLSX
+## 📊 Relatórios (Export XLSX/CSV)
 
-Permite baixar a lista de motos em **Excel (.xlsx)** diretamente da tela **Motos**.
-
-**Como usar (UI):**
-- Na página **Motos**, clique em **Exportar XLSX**.
-
-**Endpoint (usado pela UI):**
-```
-GET /web/motos/export.xlsx?status=<opcional>&patioId=<opcional>
-```
-
-**Parâmetros (opcionais):**
-- `status` — filtra por status (`DISPONIVEL`, `EM_USO`, `EM_MANUTENCAO`, `INATIVA`).
-- `patioId` — filtra por pátio (ID).
-
-**Formato do arquivo:**
-- Arquivo **.xlsx** (Excel) com as colunas **Placa**, **Modelo**, **Status** e **Pátio**.
-
-**Exemplos rápidos:**
-```
-/web/motos/export.xlsx
-/web/motos/export.xlsx?status=EM_USO&patioId=1
-```
-
-**Segurança:** requer autenticação; disponível para `ADMIN` e `OPERADOR` (mesmo controle de `/web/**`).
+- **XLSX**: botão **Exportar XLSX** na lista de Motos.  
+  Endpoint usado pela UI:
+  ```
+  GET /web/motos/export.xlsx?status=<opcional>&patioId=<opcional>
+  ```
+- **CSV**: export compatível com Excel (BOM + `sep=,`/`;`).
+- Filtros opcionais: `status` (`DISPONIVEL`, `EM_USO`, `EM_MANUTENCAO`, `INATIVA`) e `patioId`.
 
 ---
 
-## Banco de Dados & Flyway
+## 🗄️ Banco de Dados & Migrações
 
-**H2 (memória)** — dados são recriados a cada inicialização.
-
-**Migrações (executadas automaticamente):**
-1. `V1__create_table_patio.sql`
-2. `V2__create_table_moto.sql`
-3. `V3__index_moto_placa.sql`
-4. `V4__seed_base.sql` *(pátios & motos iniciais)*
+- **H2 (dev)**: em memória, recriado a cada execução.
+- **Flyway** (auto):
+    1. `V1__create_table_patio.sql`
+    2. `V2__create_table_moto.sql`
+    3. `V3__index_moto_placa.sql` (único em `MOTO.PLACA`)
+    4. `V4__seed_base.sql` (pátios + motos iniciais)
 
 ---
 
-## API REST & Swagger
+## 🔎 API REST & Swagger
 
-**Swagger UI:** `http://localhost:8080/swagger-ui.html`  
-**OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
+Acesse **/swagger-ui.html** para testar. Principais recursos:
 
+### Pátios
+- `GET /patios` (paginável), `GET /patios/{id}`
+- `POST /patios` *(ADMIN)*
+- `PUT /patios/{id}` *(ADMIN)*
+- `DELETE /patios/{id}` *(ADMIN)*
 
-### Endpoints principais
+### Motos
+- `GET /motos` (paginável)
+- `GET /motos/buscar/placa?placa=ABC`
+- `GET /motos/buscar/status?status=DISPONIVEL`
+- `POST /motos` *(ADMIN)*
+- `PUT /motos/{id}` *(ADMIN)*
+- `DELETE /motos/{id}` *(ADMIN)*
 
-**Pátios**
-- `GET /patios` — lista (paginável)
-- `GET /patios/{id}`
-- `POST /patios` — **ADMIN**
-- `PUT /patios/{id}` — **ADMIN**
-- `DELETE /patios/{id}` — **ADMIN**
-
-Exemplo `POST /patios`:
-```json
-{
-  "nome": "Pátio Zona Norte",
-  "cidade": "Guarulhos",
-  "capacidade": 80
-}
-```
-
-Exemplo `PUT /patios/{id}`:
-```json
-{
-  "id": 1,
-  "nome": "Pátio Zona Leste",
-  "cidade": "São Paulo",
-  "capacidade": 100
-}
-```
-
-**Motos**
-- `GET /motos` — lista (paginável)
-- `GET /motos/{id}`
-- `POST /motos` — **ADMIN**
-- `PUT /motos/{id}` — **ADMIN**
-- `DELETE /motos/{id}` — **ADMIN**
-
-Exemplo `POST /motos`:
+**Exemplo POST /motos**
 ```json
 {
   "placa": "ABC1D23",
@@ -216,191 +173,123 @@ Exemplo `POST /motos`:
 }
 ```
 
-Exemplo `PUT /motos/{id}`:
-```json
-{
-  "id": 1,
-  "placa": "XYZ5A67",
-  "modelo": "Yamaha Factor",
-  "status": "EM_MANUTENCAO",
-  "patioId": 1
-}
-```
+---
+
+## 🚨 Tratamento de Erros (PADRÃO)
+
+`GlobalExceptionHandler` padroniza respostas JSON:
+- **422** validação (lista por campo)
+- **404** não encontrado
+- **400** regra de negócio (ex.: status inválido; id divergente)
+- **500** erro genérico
 
 ---
 
-## Tratamento de Erros (REST)
+## 🔗 Integrações Oracle & MongoDB
 
-Respostas padronizadas em JSON com `timestamp`, `status`, `error`, `message` e `path`.
+### Oracle (função, procedure e DBMS_OUTPUT)
 
-**422 – Validação**
+**Config opcional** (só cria `JdbcTemplate` Oracle se houver URL):
+```properties
+# application.properties (dev) — exemplo de credenciais acadêmicas
+oracle.datasource.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl
+oracle.datasource.username=rmXXXXX
+oracle.datasource.password=XXXXXX
+oracle.datasource.driver-class-name=oracle.jdbc.OracleDriver
+```
+
+**Endpoints (Swagger):**
+- `GET /api/oracle/validar-placa/{placa}` → executa **função** `pkg_motogrid.validar_placa`
+- `GET /api/oracle/motos/procedure` → executa **procedure** `PKG_MOTOGRID.LISTAR_MOTOS_RC` (REF CURSOR)
+- `GET /api/oracle/resumo/dbms-output` → captura linhas via **DBMS_OUTPUT**
+
+> **Observação**: também existe um `OracleController` para consulta direta das evidências.
+
+
+### MongoDB (import, índices e agregações)
+
+**Executar Mongo local** (ex.: Docker):
+```bash
+docker run -d --name mongo -p 27017:27017 mongo:6
+```
+
+**Importar dataset** (duas formas):
+1) **Via mongosh (OS shell)**:
+```bash
+# estando na pasta onde está o arquivo .js
+mongosh --file mongo_setup_motogrid.js
+# ou importar JSONL diretamente
+mongoimport --uri "mongodb://localhost:27017/motogrid" -c motos --file motos.jsonl --jsonArray=false
+```
+2) **Dentro do mongosh** (prompt do shell):
+```javascript
+load('mongo_setup_motogrid.js')
+```
+
+**O script cria/garante**:
+- DB `motogrid`, coleção `motos`
+- **Índice único** em `placa`
+- Carga de amostra a partir do `motos.jsonl` (ou *insertMany* fallback)
+
+**Endpoints (Swagger):**
+- `GET /api/mongo/motos?limit=50` — amostra de documentos
+- `GET /api/mongo/motos/{placa}` — busca por placa (ignore case)
+- `GET /api/mongo/stats/por-patio-tipo` — soma por pátio e tipo de movimentação
+- `GET /api/mongo/stats/total?desde=YYYY-MM-DD` — total geral (filtro opc. por data)
+- `GET /api/mongo/sample` — 2 docs para evidência
+- `GET /api/mongo/indices` — lista de índices da coleção
+
+**Modelo (resumo) — `MotoDoc`**
 ```json
 {
-  "status": 422,
-  "error": "Erro de Validação",
-  "messages": {
-    "placa": "A placa é obrigatória",
-    "nome": "O nome do pátio é obrigatório"
-  }
+  "id_moto": 1,
+  "placa": "ABC1234",
+  "modelo": "Honda CG 160",
+  "cor": "Preta",
+  "ano": 2020,
+  "patio": "Patio Central",
+  "movimentacoes": [
+    {"tipo":"ENTRADA","data":"2024-05-01","valor":100.0,"funcionario":"Carlos Silva"},
+    {"tipo":"SAIDA","data":"2024-05-05","valor": 90.0,"funcionario":"Ana Costa"}
+  ]
 }
 ```
-
-**404 – Não encontrado**
-```json
-{
-  "status": 404,
-  "error": "Not Found",
-  "message": "Pátio não encontrado"
-}
-```
-
-**400 – Status inválido no filtro**
-```json
-{
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Status inválido. Use: DISPONIVEL, EM_USO, EM_MANUTENCAO ou INATIVA."
-}
-```
-
-**400 – ID divergente (PUT)**
-```json
-{
-  "status": 400,
-  "error": "Bad Request",
-  "message": "ID do corpo e da URL não conferem"
-}
-```
-
-**500 – Erro genérico**
-```json
-{
-  "status": 500,
-  "error": "Internal Server Error",
-  "message": "Erro interno: ..."
-}
-```
-
----
-
-## Estrutura de Pastas
-
-```
-src
-├── main
-│   ├── java
-│   │   └── br.com.fiap.motogrid
-│   │       ├── controller
-│   │       ├── dto
-│   │       ├── exception
-│   │       ├── model
-│   │       ├── repository
-│   │       ├── security
-│   │       └── service
-│   └── resources
-│       ├── db/migration           # V1...V4 (Flyway)
-│       ├── static/css/app.css
-│       └── templates
-│           ├── fragments/{head,header,footer}.html
-│           ├── home.html
-│           ├── login.html
-│           ├── access-denied.html
-│           ├── motos/{list,form}.html
-│           └── patios/{list,form}.html
-└── test
-```
-
----
-
-## Roteiro de Testes (passo a passo)
-
-### A) Autenticação & Autorização
-1. Acesse `/login`:
-    - Entre como **admin/123** → redireciona para `/web`.
-    - Entre como **operador/123** → redireciona para `/web`.
-2. Navbar: abra **Motos** e **Pátios** com ambos os perfis – **ambos** podem visualizar.
-3. Com **operador**, confirme que **não** há botões de **criar/editar/excluir** (aparece “Somente leitura”).
-4. Com **admin**, confirme que **criar/editar/excluir** funcionam.
-5. Clique em **Sair** (navbar) → sessão encerrada (logout **POST**).
-
-### B) CRUD Web (Thymeleaf)
-1. **Pátios → Novo pátio**: criar, voltar à lista e conferir registro.
-2. **Editar pátio** e confirmar persistência.
-3. **Excluir pátio** (com `admin`).
-4. **Motos → Nova moto** vinculando a um pátio existente.
-5. **Editar** e **excluir** uma moto.
-
-### C) Fluxo adicional — Exportar XLSX
-1. Em **/web/motos**, clique **Exportar XLSX** → abra no Excel: colunas e acentos corretos.
-2. Teste filtros via URL (ex.: `?status=EM_USO&patioId=1`).
-
-### D) Validações
-1. Tente salvar **pátio** sem `nome`/`cidade` → mensagens de erro ao lado dos campos.
-2. Tente salvar **moto** sem `placa`/`modelo` ou sem `patioId` → mensagens de erro.
-3. Se houver regra de placa, teste formato inválido → deve rejeitar.
-
-### E) API REST (Swagger)
-1. Logado, abra `/swagger-ui.html`.
-2. Execute `GET /patios` e `GET /motos` → deve listar seed + registros criados.
-3. Com **ADMIN**, teste `POST/PUT/DELETE` para ambos recursos.
-4. Com **OPERADOR**, `POST/PUT/DELETE` devem falhar com **403** (ou 401, conforme o caso).
-
-### F) H2 & Migrações
-1. Acesse `/console` e conecte (`jdbc:h2:mem:motogrid`).
-2. Verifique as tabelas (`PATIO`, `MOTO`) e a tabela do **Flyway**.
-3. Confira dados de **seed** (V4).
 
 ---
 
 ## 🌐 Deploy (Render)
 
-Aplicação publicada em: **https://java-mottu.onrender.com**
+A aplicação está publicada em **https://java-mottu.onrender.com**.
 
-**Rotas úteis no deploy:**
-- **Home Web:** `https://java-mottu.onrender.com/web`
-- **Login:** `https://java-mottu.onrender.com/login`
-- **Swagger UI:** `https://java-mottu.onrender.com/swagger-ui.html`
-- **H2 Console:** `https://java-mottu.onrender.com/console` *(se habilitado)*  
-  - JDBC URL: `jdbc:h2:mem:motogrid`  
-  - User: `sa` — Password: *(vazio)*
+**`application-prod.properties`** (trechos importantes):
+```properties
+server.port=${PORT:8080}
 
-**Credenciais de teste (iguais ao local):**
-- `admin` / `123`
-- `operador` / `123`
+# H2 em arquivo (persiste entre reinícios do container)
+spring.datasource.url=jdbc:h2:file:./data/motogrid;AUTO_SERVER=TRUE;MODE=LEGACY
+spring.datasource.driverClassName=org.h2.Driver
+spring.jpa.hibernate.ddl-auto=update
 
-> ℹ️ **Observações do ambiente Render**
-> - O banco **H2 em memória** é recriado a cada reinício do serviço (cold start/deploy). As migrações **Flyway** restauram o *seed* automaticamente.
-> - O primeiro acesso após período de inatividade pode demorar alguns segundos enquanto o serviço aquece.
-> - Para ações protegidas por CSRF no **/web/**, utilize os formulários da própria UI (links diretos de `POST` podem ser bloqueados).
+# Mongo (se houver instância externa)
+spring.data.mongodb.uri=${MONGODB_URI:mongodb://localhost:27017/motogrid}
 
----
+# Oracle (opcional no deploy)
+oracle.datasource.url=${ORACLE_URL:}
+oracle.datasource.username=${ORACLE_USER:}
+oracle.datasource.password=${ORACLE_PASS:}
+oracle.datasource.driver-class-name=oracle.jdbc.OracleDriver
+```
 
-## Troubleshooting
-
-- **“H2 Console não abre”:** confirme se `/console/**` está liberado na `SecurityFilterChain` e se a propriedade `spring.h2.console.enabled=true` está ativa.
-- **Erro 403 no botão “Sair”:** logout é **POST** (CSRF). Use o botão da navbar; abrir `/logout` por GET pode retornar erro — comportamento esperado.
-- **Erro de chave única (placa):** confira o índice único em `MOTO(PLACA)` (Flyway V3) e evite duplicidade.
-- **Swagger 404 em produção:** acesse `/swagger-ui.html` (não apenas `/swagger-ui/`). Confirme a lista de `permitAll()` para `/v3/api-docs/**` e `/swagger-ui/**`.
-- **Exportar XLSX baixa arquivo vazio:** verifique filtros `status/patioId` na URL e se há dados após o *seed*.
+> O primeiro acesso após inatividade pode levar alguns segundos (a instância “acorda”).
 
 ---
 
-## Checklist da Sprint
+## 👥 Autores
 
-- [x] CRUD completo de **Pátios** (Web + REST)
-- [x] CRUD completo de **Motos** (Web + REST)
-- [x] **Thymeleaf** com fragments (`head`, `header`, `footer`)
-- [x] **Validações** (Jakarta) no Web + REST
-- [x] **Tema escuro** (Bootswatch Darkly + CSS)
-- [x] **Autenticação** e **autorização** (ADMIN/OPERADOR)
-- [x] **Swagger/OpenAPI** disponível
-- [x] **Flyway** com 4 migrações + *seed*
-- [x] **Exportação XLSX** a partir da lista de Motos
-- [x] **Deploy no Render** com acesso público
+- **Gabriel Gomes Mancera** — RM: 555427
+- **Victor Hugo Carvalho** — RM: 558550
+- **Juliana de Andrade Sousa** — RM: 558834
 
 ---
 
-## Autores
-- **Gabriel Gomes Mancera** (RM: 555427)
-- **Victor Hugo Carvalho** (RM: 558550)
-- **Juliana de Andrade Sousa** (RM: 558834)
+> Dúvidas ou correções? Abra uma *issue* ou nos chame! 🚀
