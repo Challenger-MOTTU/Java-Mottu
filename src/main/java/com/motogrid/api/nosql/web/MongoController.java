@@ -4,6 +4,7 @@ import com.motogrid.api.nosql.document.MotoDoc;
 import com.motogrid.api.nosql.repository.MotoDocRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
+import org.springframework.context.annotation.Profile; // <-- ADICIONE ESTE IMPORT
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
+@Profile("!prod")
 @RestController
 @RequestMapping("/api/mongo")
 @RequiredArgsConstructor
