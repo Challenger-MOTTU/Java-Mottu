@@ -21,34 +21,30 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // **Deixe primeiro**: Render health check
+                        .requestMatchers("/actuator/**").permitAll()
+
                         .requestMatchers(
                                 "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
                                 "/console/**", "/error",
                                 "/css/**", "/img/**", "/webjars/**",
                                 "/favicon.ico",
                                 "/login",
-                                // Evidências/consultas da Sprint
+                                // evidências/consultas
                                 "/api/mongo/**",
-                                "/api/oracle/**",
-                                "/actuator/health", "/actuator/info"
+                                "/api/oracle/**"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/web/**").hasAnyRole("ADMIN", "OPERADOR")
 
                         .requestMatchers(HttpMethod.POST,
-                                "/web/motos/salvar",
-                                "/web/motos/{id}/salvar",
-                                "/web/patios/salvar",
-                                "/web/patios/{id}/salvar"
+                                "/web/motos/salvar", "/web/motos/{id}/salvar",
+                                "/web/patios/salvar", "/web/patios/{id}/salvar"
                         ).hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST,
-                                "/web/motos/excluir",
-                                "/web/motos/excluir/{id}",
-                                "/web/motos/{id}/excluir",
-                                "/web/patios/excluir",
-                                "/web/patios/excluir/{id}",
-                                "/web/patios/{id}/excluir"
+                                "/web/motos/excluir", "/web/motos/excluir/{id}", "/web/motos/{id}/excluir",
+                                "/web/patios/excluir", "/web/patios/excluir/{id}", "/web/patios/{id}/excluir"
                         ).hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.PUT, "/web/**").hasRole("ADMIN")
@@ -63,15 +59,15 @@ public class SecurityConfig {
 
                         .anyRequest().authenticated()
                 )
+                // Ignora CSRF onde precisa
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/actuator/**",
                         "/motos/**", "/patios/**",
                         "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                         "/console/**",
-                        // Ignora CSRF para APIs REST (Mongo/Oracle)
-                        "/api/**",
-                        "/actuator/**"
+                        "/api/**"
                 ))
-                // Console H2
+                // H2 console
                 .headers(h -> h.frameOptions(f -> f.sameOrigin()))
                 .formLogin(login -> login
                         .loginPage("/login").permitAll()
@@ -86,13 +82,9 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService users(PasswordEncoder encoder) {
         UserDetails admin = User.withUsername("admin")
-                .password(encoder.encode("123"))
-                .roles("ADMIN").build();
-
+                .password(encoder.encode("123")).roles("ADMIN").build();
         UserDetails operador = User.withUsername("operador")
-                .password(encoder.encode("123"))
-                .roles("OPERADOR").build();
-
+                .password(encoder.encode("123")).roles("OPERADOR").build();
         return new InMemoryUserDetailsManager(admin, operador);
     }
 
