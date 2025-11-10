@@ -125,7 +125,7 @@
     </dependencies>
 
     <build>
-        <!-- Garante que NADA em resources será filtrado -->
+        <!-- NÃO filtrar resources (evita erro de encoding em application.properties/yml) -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -151,7 +151,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Força encoding UTF-8 no resources e protege .properties/.yml de filtering -->
+            <!-- Garante UTF-8 ao copiar resources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
