@@ -17,7 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Configuration
 public class DbConfig {
 
-    // ---- H2 (PRIMÁRIO) ----
+    
     @Bean
     @Primary
     @ConfigurationProperties("spring.datasource")
@@ -33,7 +33,7 @@ public class DbConfig {
                 .build();
     }
 
-    // ---- ORACLE (opcional; só cria se existir oracle.datasource.url) ----
+    
     @Bean
     @ConfigurationProperties("oracle.datasource")
     @ConditionalOnProperty(prefix = "oracle.datasource", name = "url")
